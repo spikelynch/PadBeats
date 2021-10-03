@@ -28,13 +28,15 @@ SynthDef(\kick,
 	}
 ).add;
 
+)
+(
 SynthDef(\snare,
 	{
 		arg out=0, amp=1, pan=0, atk=0.01, rel=0.5, hi=13000, lo=2500, cfreq=1500;
 		var snare, click, env;
 		env = EnvGen.kr(Env.perc(atk, rel, amp, -8), doneAction: Done.freeSelf);
 		snare = RLPF.ar(WhiteNoise.ar(0.5 * amp), XLine.kr(hi, lo, rel));
-		click = LPF.ar(WhiteNoise.ar(0.5 * amp), cfreq) * Line.kr(1, 0, rel * 0.1);		    Out.ar(0, Pan2.ar((click + snare) * env, pan));
+		click = LPF.ar(WhiteNoise.ar(0.5 * amp), cfreq) * Line.kr(1, 0, rel * 0.1);		    Out.ar(out, Pan2.ar((click + snare) * env, pan));
 	}
 ).add;
 )
@@ -46,7 +48,7 @@ Synth(\kick, [ \rel, 0.2, \namp, 1, \decay, 0.01, \lo, 90] );
 
 Synth(\snare, [ \hi, 20000,\lo,200,\rel, 2]);
 
-Synth(\hihat, [ \filter, 5000, \atk, 0])
+Synth(\hihat, [ \out, ~seqb,\filter, 5000, \atk, 0])
 
 
 
@@ -71,5 +73,23 @@ SynthDef(\fm_basic, {
 
 )
 
+(
 
-Synth(\fm_basic, [ \rel, 1])
+SynthDef(\klank, {
+	arg out=0, freq=440, a=1, partials=0.5, fade=0.1, amp=0.2, atk=0.01, rel=1, gate=1, pan=0;
+	var env, sig, nharms=10, harms, amps, rings, bank;
+	env = EnvGen.kr(Env.perc(atk, rel, amp), doneAction: Done.freeSelf);
+	harms = freq * ( [1] ++ (1..(nharms - 1)).collect({|n| (( n + 0.5) ** 2) * a}));
+	amps = Array.geom(nharms, 1 / nharms, fade);
+	rings = Array.geom(nharms, 1, partials);
+	bank = `[ harms, amps, rings ];
+	//i = Dust.ar(1, amp);
+	//i = env * Impulse.ar(0, 0, amp);
+	sig = Klank.ar(bank, Dust.ar(1000, amp * 0.4));
+    Out.ar(out, Pan2.ar(sig * env, pan));
+}).add;
+)
+
+
+
+Synth(\fm_basic, [ \out, ~seqb,\rel, 1])
