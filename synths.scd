@@ -41,14 +41,6 @@ SynthDef(\snare,
 ).add;
 )
 
-Synth(\kick, [ \rel, 0.2, \namp, 1, \decay, 0.01, \lo, 90] );
-
-[ 1, 2, 3 ] ++ [ 2, 3, 4]
-
-
-Synth(\snare, [ \hi, 20000,\lo,200,\rel, 2]);
-
-Synth(\hihat, [ \out, ~seqb,\filter, 5000, \atk, 0])
 
 
 

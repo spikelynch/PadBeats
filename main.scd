@@ -1,292 +1,152 @@
 
 
-// recording midi events as patterns and playing them back
-
-
-// midi event -> add a vel/timing to an array of events
-// every bar -> play these events back
 Server.killAll;
 s.boot;
 
-MIDIIn.connect;
 
-
-t = TempoClock.new(1);
-t
+// set up the effects chain: -> filter -> delay -> reverb -> out
 
 (
 ~seqb = Bus.audio(s, 2);
+~filterb = Bus.audio(s, 2);
 ~delayb = Bus.audio(s, 2);
 ~reverbb = Bus.audio(s, 2);
-
+~lfob = Bus.control(s, 1);
 )
 
-~seqb.channels;
 
-
-~seqb;
 (
+
+~lfo1 = SynthDef(
+	\lfo, {
+		arg out, freq=0.4, freqlo=0.01, freqhi=20, amp=0;
+		var mfreq = freq.linexp(0, 1, freqlo, freqhi);
+		Out.kr(out, SinOsc.kr(mfreq, 0, amp));
+	}
+).play(s, [ \out, ~lfob ], \addToTail);
+
+
+~filter = SynthDef(
+	\filter, {
+		arg in, out, mod, freq=0.5, freqlo=200, freqhi=10000, res=1.0, amp=0.3;
+		var filt, lfo, mfreq;
+		mfreq = freq.linexp(0, 1, freqlo, freqhi);
+		lfo = LinExp.kr(In.kr(mod, 1), -1, 1, mfreq * 0.5, mfreq * 2);
+		filt = RLPF.ar(In.ar(in, 2) * amp, lfo, res);
+		Out.ar(out, filt);
+	}
+).play(s, [ \in, ~seqb, \out, ~filterb, \mod, ~lfob, \amp, 1.0  ], \addToTail);
+
 ~delay = SynthDef(
     \delay, {
-		arg in, out, maxdelay=1, delaytime=0.2, decaytime=0.1, amp=0.2;
+		arg in, out, maxdelay=1, delaytime=0.2, decaytime=0.1, amp=0.4;
 		var sig = In.ar(in, 2), del;
 		del = CombC.ar(sig, maxdelay, delaytime, decaytime, amp);
-		Out.ar(out, sig + del);
+		Out.ar(out, del);
 	}
-).play(s, [ \in, ~seqb, \out, ~delayb ], \addToTail);
+).play(s, [ \in, ~filterb, \out, ~delayb ], \addToTail);
 
 ~reverb = SynthDef(
 	\reverb, {
-		arg in, out, reverbmix=0.33, room=0.5, damp=0.5, amp=0.2;
-		Out.ar(out, FreeVerb.ar(In.ar(in, 2), reverbmix, room, damp, amp));
+		arg in1, in2, out, reverbmix=0.33, room=0.5, damp=0.5, amp=0.4;
+		Out.ar(out, FreeVerb.ar(In.ar(in1, 2) + In.ar(in2, 2), reverbmix, room, damp, amp));
 	}
-).play(s, [ \in, ~delayb, \out, ~reverbb ], \addToTail);
+).play(s, [ \in1, ~filterb, \in2, ~delayb, \out, ~reverbb ], \addToTail);
 
+// Note that this isn't really a mixer.  To set the levels of delay and reverb,
+// set the amp parameters on those synths.  The amp here is the overall output gain.
 
 ~mixer = SynthDef(
 	\mixer, {
-		arg in, out=0, delay, reverb, amp=0.5, delayamp = 0.0, reverbamp = 0.0;
-		Out.ar(out, In.ar(in, 2) * amp + In.ar(delay, 2) * delayamp + In.ar(reverb, 2) * reverbamp);
+		arg out=0, filt, delay, reverb, amp=1.0;
+		Out.ar(out, (In.ar(filt, 2) + In.ar(delay, 2) + In.ar(reverb, 2)) * amp );
 	}
-).play(s, [ \in, ~seqb, \delay, ~delayb, \reverb, ~reverbb, \out, 0, \delayamp, 1, \reverbamp, 1 ], \addToTail);
-
+).play(s, [ \filt, ~filterb, \delay, ~delayb, \reverb, ~reverbb, \out, 0, \amp, 1.0 ], \addToTail);
 
 )
+
+~filter.set(\freq, 0.2);
+~lfo1.set(\freq, 0.75);
+~lfo1.set(\amp, 0.5);
+
+(
+
+// remember to do me last!
+~monitor = SynthDef(
+	\monitor, {
+		arg in, out=0, amp=0.5;
+		Out.ar(out, In.ar(in, 2) * amp);
+	}
+).play(s, [ \in, ~filterb ], \addToTail);
+
+)
+
+~monitor.set(\in, ~mixerb);
+~monitor.free;
+
+s.sendMsg('/n_free', 1004)
+
+~mixer.free;
+
+(
+~filter.free;
+~delay.free;
+~reverb.free;
+~mixer.free;
+~monitor.free;
+)
+
+
+// a test pulse
 
 (
 ~tick = SynthDef(
 	\tick, {
-		arg out, amp=0.2;
-		Out.ar(out, Pan2.ar(Impulse.ar(1, 0, amp), WhiteNoise.kr(1, -0.5)));
+		arg out, amp=0.5;
+		var klank = Klank.ar(`[[400, 500, 750], [ 0.4, 0.3, 0.2 ], [1, 1, 1]], Impulse.ar(1, 0, amp));
+		Out.ar(out, Pan2.ar(klank, SinOsc.kr(0.1, 0, 0.3)));
 	}
 ).play(s, [\out, ~seqb]);
 )
 
 ~tick.free;
 
-(
-~monitor = SynthDef(
-	\monitor, {
-		arg in, out=0, amp=0.5;
-		Out.ar(out, In.ar(in) * amp);
-	}
-).play(s, [ \in, ~delayb ], \addToTail);
-)
-~monitor.free;
-
-~monitor.set(\in, ~seqb);
-
-~mixer.free;
-~mixer.set(\amp, 0.4)
-~delay.set(\delay, 0.2);
-
-~knobs;
-~mixer.map(\amp, ~knobs[0]);
-
-~mixer.map(\delayamp, ~knobs[1]);
-~mixer.map(\reverbamp, ~knobs[2]);
-
-~delay.map(\delaytime, ~knobs[3]);
-
-~reverb.map(\reverbmix, ~knobs[4]);
 
 
 
 (
 
-~notes = List.new(0);
+MIDIIn.connect;
 
-// notes on handling releases: if the note array item has a release time,
-// then store the synth in a local variable and set a t.sched action which
-// releases it
-
-~sequencer = t.play({
-	[ "seq", t.beats, t.bar ].postln;
-	~notes.do({
-		arg note;
-		t.sched(note[0], {
-			Synth.head(nil, note[2][0], [ \out, ~seqb, \amp, note[1] / 127 ] ++ note[2][1] );
-		});
-	});
-	4;
-}, quant: 4)
-
-)
-
-// how to switch things off
-
-~notes = List.new(0);
-
-~notes;
-
-~notes.removeAllSuchThat({ arg item, i; item[2][0] == \fm_basic});
-~notes;
-
-// metronome - find a way to turn this off and on>
-(
-t = TempoClock.new(1.4);
-t.play({
-	Synth.head(nil, \hihat, [
-		\out, ~seqb,
-		\amp, 0.1,
-		\pan, -0.3
-	]);
-	4;
-}, quant: 4);
-
-t.play({
-	Synth.head(nil, \kick, [
-		\out, ~seqb,
-		\amp, 0.1,
-		\pan, 0.2
-	]);
-	1;
-}, quant: 4);
-
-
-)
-
-t.beats
-// not bothering with releasing notes for now - have to figure
-// out an elegant way to do that
-
-~foo = List.new(8);
-
-~foo.add("a");
-
-~foostr = Post <<< ~foo;
-
-~foostr;
-
-~foostr = ~foo.asCompileString;
-
-~blah = ~foostr.compile;
-
-~bar = ~blah.value();
-
-~bar.at(0);
-
-~outdir = "~/Music/SuperCollider/Patterns/";
-
-(
-~savepattern = {
-	arg fname = 'pattern.scd', pattern;
-	var strpat = pattern.asCompileString, path, fhandle;
- 	path = ~outdir ++ fname;
-	fhandle = File(path.standardizePath, "w");
-	fhandle.write(pattern.asCompileString, "\n");
-	fhandle.close;
-	[ "Wrote pattern to", path  ].postln;
- };
-
-)
-
-
-(
-~loadpattern = {
-	arg fname = 'pattern.scd';
-	var path, str, valfn;
- 	path = ~outdir ++ fname;
-	str = File.readAllString(path.standardizePath);
-	valfn = str.compile;
-	valfn.value();
- };
-
-)
-
-~notes = ~loadpattern.value('reverb.scd');
-
-
-
-~notes = List.new(0);
-
-~foo;
-
-~savepattern.value('reverb.scd', ~notes);
-
-
-~bar = ~loadpattern.value('test.scd');
-
-~bar;
-
-[ 12, 15] * 0.2 - 1.2
-
-~a = { |i| [ \pan, (i -  9) * 9 ] }
-~a.value(1)
-
-([41, 41 + 25] - 52) * 0.02
-
-~notes = List.new(0);
-
-~insts
-(
-~insts = [
-	[ \kick,  4,  { |i| [ \lo, i * 20 + 60,          \pan, 0  ] } ],
-	[ \snare, 8,  { |i| [ \hi, (i - 4) * 5000 + 5000, \pan, 0.33   ]  }  ],
-	[ \hihat, 12, { |i| [ \filter, (i - 8) * 1000 + 2000 ] }, \pan, -0.33 ],
-	[ \fm_basic, 41, { |i| [ \freq, (i + 20).midicps, \rel, 0.4, \pan, (i - 52) * 0.02  ] } ]
-];
-)
-
-(
-~getinst = {
-	|i|
-	var inst = ~insts.select({|inst| i < inst[1] }).first;
-	[ inst[0], inst[2].value(i) ]
-};
-
-)
-
-~insts;
-
-
-(
-(0..15).do({ |x| ~getinst.value(x).postln })
-)
-
-m = ();
-
-(
-m[\keys] = Array.newClear(25);
-m[\key0] = 48;
-
-m[\keymidiOn] = MIDIFunc.noteOn({
-	| vel, note |
-	var beat = t.beats, bar = t.bar, time, s, i, sp;
-	time = beat - t.bars2beats(bar);
-	i = note - 36;
-	sp = ~getinst.value(i);
-	~notes.add([time, vel, sp]);
-	Synth.head(nil, sp[0], [ \out, ~seqb, \amp, vel / 127 ] ++ sp[1] );
-
-});
-
-)
-
-
-(0..8).collect({|i|  i * 2});
+m = ();   // midi stuff
 
 
 ~knobs = (0..7).collect({|i| Bus.control(s, 1)});
 
-
-~knobs[0].get;
-
-
-
-
-
-(21..28)
-
-
-(
 m[\knob] = MIDIFunc.cc({
 	| v, c |
 	var chan = c - 21;
-	[ chan, v ].postln;
 	~knobs[chan].set(v / 127);
 });
 )
 
+// 1 - delayamount
+// 2 - delaytime
+// 3 - filter
+// 4 - LFO rate
+// 5 - LFO amount
+// 6 - FM synth mRatio
+// 7 - FM synth cRatio
+(
+~delay.map(\amp, ~knobs[0]);
+
+~delay.map(\delaytime, ~knobs[1]);
+~filter.map(\freq, ~knobs[2]);
+~lfo1.map(\freq, ~knobs[3]);
+~lfo1.map(\amp, ~knobs[4]);
+
+)
+
+~delay.set(\decaytime, 1);
 
 m[\knob].free;
