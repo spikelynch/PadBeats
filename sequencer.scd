@@ -89,6 +89,7 @@ t.beats
 
 ~savepattern.value('dank_stuff');
 
+~recording = false;
 
 ~notes = List.new(0);
 
@@ -98,9 +99,13 @@ t.beats
 	[ \kick,  4,  { |i| [ \lo, i * 20 + 60,          \pan, 0  ] } ],
 	[ \snare, 8,  { |i| [ \hi, (i - 4) * 5000 + 5000, \pan, 0.33   ]  }  ],
 	[ \hihat, 12, { |i| [ \filter, (i - 8) * 1000 + 2000 ] }, \pan, -0.33 ],
-	[ \fm_basic, 41, { |i| [ \freq, (i + 20).midicps, \rel, 0.4, \pan, (i - 52) * 0.02  ] } ]
+	[ \fm_basic, 41, { |i| [ \freq, (i + 20).midicps, \rel, 0.4, \pan, (i - 52) * 0.02, \mRatio, ~kparams[0].linexp(0, 1, 0.2, 20), \cRatio, ~kparams[1].linexp(0, 1, 0.2, 20)  ] } ]
 ];
 )
+
+~mRatio = 0.33;
+~cRatio = 1.2;
+
 
 (
 ~getinst = {
@@ -111,11 +116,15 @@ t.beats
 
 )
 
-
+~recording=false;
 
 (
 m[\keys] = Array.newClear(25);
 m[\key0] = 48;
+
+)
+
+(
 
 m[\keymidiOn] = MIDIFunc.noteOn({
 	| vel, note |
@@ -123,9 +132,11 @@ m[\keymidiOn] = MIDIFunc.noteOn({
 	time = beat - t.bars2beats(bar);
 	i = note - 36;
 	sp = ~getinst.value(i);
-	~notes.add([time, vel, sp]);
+	if(~recording, { ~notes.add([time, vel, sp])} );
 	Synth.head(nil, sp[0], [ \out, ~seqb, \amp, vel / 127 ] ++ sp[1] );
 
 });
 
 )
+
+m[\keymidiOn].free;

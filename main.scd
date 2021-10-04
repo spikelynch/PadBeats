@@ -121,14 +121,30 @@ MIDIIn.connect;
 m = ();   // midi stuff
 
 
-~knobs = (0..7).collect({|i| Bus.control(s, 1)});
+~knobs = (0..5).collect({|i| Bus.control(s, 1)});
+
+// The first six knobs map to control busses
+// The other two are used to map the ~mRatio and ~cRatio parameters on the fm synth
 
 m[\knob] = MIDIFunc.cc({
 	| v, c |
 	var chan = c - 21;
 	~knobs[chan].set(v / 127);
+}, (0..5));
+)
+
+~kparams = ();
+
+~kparams;
+
+(
+m[\knobp] = MIDIFunc.cc({
+	| v, c |
+	var chan = c - 27;
+	~kparams[chan] = v / 127;
 });
 )
+
 
 // 1 - delayamount
 // 2 - delaytime
@@ -148,5 +164,7 @@ m[\knob] = MIDIFunc.cc({
 )
 
 ~delay.set(\decaytime, 1);
+
+~reverb.set(\reverbmix, 0.2);
 
 m[\knob].free;
