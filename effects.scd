@@ -84,37 +84,4 @@
 ).play(s, [ \passthrough, ~fxb, \filter, ~filterb, \delay, ~delayb, \reverb, ~reverbb, \out, 0, \amp, 0.4, \pt, 0.2 ], \addToTail);
 
 
-MIDIIn.connect;
-
-m = ();   // midi stuff
-
-
-~knobs = (0..5).collect({|i| Bus.control(s, 1)});
-
-// The first six knobs map to control busses
-// The other two are used to map the ~mRatio and ~cRatio parameters on the fm synth
-
-m[\knob] = MIDIFunc.cc({
-	| v, c |
-	var chan = c - 21;
-	[ chan,v ].postln;
-	~knobs[chan].set(v / 127);
-}, (21..26));
-
-~kparams = ();
-
-m[\knobp] = MIDIFunc.cc({
-	| v, c |
-	var chan = c - 27;
-	~kparams[chan] = v / 127;
-}, (27..28));
-
-
-~delay.map(\amp, ~knobs[0]);
-~delay.map(\delaytime, ~knobs[1]);
-~filter.map(\freq, ~knobs[2]);
-~lfo1.map(\freq, ~knobs[3]);
-~lfo1.map(\amp, ~knobs[4]);
-
 )
-

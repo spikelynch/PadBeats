@@ -24,4 +24,6 @@ s.boot;
 
 ("./effects.scd").loadRelative();
 
+("./midi.scd").loadRelative();
+
 ("./synths.scd").loadRelative();
