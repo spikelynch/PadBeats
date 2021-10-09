@@ -28,14 +28,20 @@ s.boot;
 ~bpm = 140;
 ~beatsperbar = 4;
 
-("./sequencer.scd").loadRelative();
-
 
 )
+
 ("./sequencer.scd").loadRelative();
 
 ~metronome.value('metronome', 0, 4);
 
-~remove.value('toms');
-~recording = '';
+~recording = 'test';
+
+~notes;
+
+
+~remove.value('metronome');
+~recording = 'yrdy';
+(0..36).do{ |i| ~keys[i].postln;}
+
 
