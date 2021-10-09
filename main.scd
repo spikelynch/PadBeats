@@ -1,13 +1,13 @@
 
+s.boot;
 
 
 (
-s.boot;
 
 ("./effects.scd").loadRelative();
 ("./synths.scd").loadRelative();
+("./midi.scd").loadRelative();
 
-~delay.map(\amp, ~knobs[0]);
 ~delay.set(\amp, 0.8);
 ~delay.set(\decaytime, 1.5);
 
@@ -16,19 +16,6 @@ s.boot;
 ~reverb.set(\damp, 0.9);
 ~reverb.set(\reverbmix, 0.4);
 
-~mixer.set(\amp, 0.3);
-
-
-
-)
-
-("./effects.scd").loadRelative();
-
-("./midi.scd").loadRelative();
-
-
-
-(
 ~delay.map(\amp, ~knobs[0]);
 
 ~delay.map(\delaytime, ~knobs[1]);
@@ -36,6 +23,22 @@ s.boot;
 ~lfo1.map(\freq, ~knobs[3]);
 ~lfo1.map(\amp, ~knobs[4]);
 
+~mixer.set(\amp, 0.3);
+
+~bpm = 140;
+~beatsperbar = 4;
+
+("./sequencer.scd").loadRelative();
+
+
 )
 
-("./synths.scd").loadRelative();
+
+(
+~recording ='tst';
+
+~notes = List.new(0);
+
+~notes.removeAllSuchThat({ arg item, i; item[3] == 'chimes'});
+
+)
