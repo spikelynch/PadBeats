@@ -18,14 +18,15 @@
 
 t = TempoClock.new(~bpm / 120);
 
-
+~note0 = 36; // this is the midi value of the lowest key on the controller
+~noten = 37; // this is the number of keys
 
 
 
 ~notes = List.new(0);
 
-~seqkeys = Array.newClear(37);
-~keys = Array.newClear(37);
+~seqkeys = Array.newClear(~noten);
+~keys = Array.newClear(~noten);
 
 
 
@@ -49,10 +50,10 @@ t = TempoClock.new(~bpm / 120);
 
 
 m[\keymidiOn] = MIDIFunc.noteOn({
-	| vel, note |
+	| vel, midinote |
 	var beat = t.beats, bar = t.bar, time, s, i, sp, n = nil;
 	time = beat - t.bars2beats(bar);
-	i = note - 36;
+	i = midinote - ~note0;
 	sp = ~getinst.value(i);
 	[i, time, sp].postln;
 	if(~recording != '', {
@@ -65,21 +66,24 @@ m[\keymidiOn] = MIDIFunc.noteOn({
 });
 
 
-// m[\keymidiOff] = MIDIFunc.noteOn({
-// 	| vel, note |
-// 	var beat = t.beats, bar = t.bar, time, s, i, sp;
-// 	time = beat - t.bars2beats(bar);
-// 	i = note - 36;
-// 	sp = ~getinst.value(i);
-// 	if(~recording != '', { ~notes.add([time, vel, sp, ~recording])} );
-// 	Synth.head(nil, sp[0], [ \out, ~fxb, \amp, vel / 127 ] ++ sp[1] );
-//
-// });
+m[\keymidiOff] = MIDIFunc.noteOff({
+	| vel, midinote |
+	var beat = t.beats, bar = t.bar, time, s, i, key, note, dur;
+	time = beat - t.bars2beats(bar);
+	i = midinote - ~note0;
+	key = ~keys[i];
+	if( key != nil, {
+		if( key[0] != nil, {
+			note = ~notes[key[0]];
+			dur = beat - note[2];
+			~notes[key[0]][3] = dur;
+			[ "key", i, "note", key[0], "duration", dur ].postln;
+		});
+		"release key".postln;
+		key[1].release;
+	});
 
-
-
-
-
+});
 
 
 ~sequencer = t.play({
@@ -134,5 +138,6 @@ m[\keymidiOn] = MIDIFunc.noteOn({
 )
 
 
+~recording = 'test';
 
-//m[\keymidiOn].free;
+m[\keymidiOff].free;

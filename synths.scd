@@ -45,10 +45,10 @@ SynthDef(\fm_basic, {
 	arg out=0, freq=440, saw=0, mRatio=1, cRatio=1, index=1, iScale=5,
 	amp=0.2, atk=0.01, rel=3, gate=1, pan=0;
 	var car, mod, env, iEnv, refsaw;
-	//env = EnvGen.kr(Env.adsr(atk, rel, amp), gate, doneAction: Done.freeSelf);
-	//iEnv = EnvGen.kr(Env.new([index, index * iScale, index], [atk, rel]), gate);
-	env = EnvGen.kr(Env.perc(atk, rel, amp), doneAction: Done.freeSelf);
-	iEnv = EnvGen.kr(Env.new([index, index * iScale, index], [atk, rel]));
+	env = EnvGen.kr(Env.adsr(atk, rel, amp), gate, doneAction: Done.freeSelf);
+	iEnv = EnvGen.kr(Env.new([index, index * iScale, index], [atk, rel]), gate);
+	//env = EnvGen.kr(Env.perc(atk, rel, amp), doneAction: Done.freeSelf);
+	//iEnv = EnvGen.kr(Env.new([index, index * iScale, index], [atk, rel]));
 
 	refsaw = Saw.ar(freq, saw) * env * amp;
 	mod = SinOsc.ar(freq * mRatio, mul:freq * mRatio * iEnv);
