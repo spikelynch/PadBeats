@@ -44,24 +44,24 @@ s.boot;
 		del = CombC.ar(sig, maxdelay, delaytime, decaytime, amp);
 		Out.ar(out, del);
 	}
-).play(s, [ \in, ~filterb, \out, ~delayb ], \addToTail);
+).play(s, [ \in, ~filterb, \out, ~delayb, \amp, 0.6 ], \addToTail);
 
 ~reverb = SynthDef(
 	\reverb, {
 		arg in1, in2, out, reverbmix=0.33, room=0.5, damp=0.5, amp=0.4;
 		Out.ar(out, FreeVerb.ar(In.ar(in1, 2) + In.ar(in2, 2), reverbmix, room, damp, amp));
 	}
-).play(s, [ \in1, ~filterb, \in2, ~delayb, \out, ~reverbb ], \addToTail);
+).play(s, [ \in1, ~filterb, \in2, ~delayb, \out, ~reverbb, \amp, 1.0 ], \addToTail);
 
 // Note that this isn't really a mixer.  To set the levels of delay and reverb,
 // set the amp parameters on those synths.  The amp here is the overall output gain.
 
 ~mixer = SynthDef(
 	\mixer, {
-		arg out=0, filt, delay, reverb, amp=1.0;
+		arg out=0, filt, delay, reverb, amp=0.4;
 		Out.ar(out, (In.ar(filt, 2) + In.ar(delay, 2) + In.ar(reverb, 2)) * amp );
 	}
-).play(s, [ \filt, ~filterb, \delay, ~delayb, \reverb, ~reverbb, \out, 0, \amp, 1.0 ], \addToTail);
+).play(s, [ \filt, ~filterb, \delay, ~delayb, \reverb, ~reverbb, \out, 0, \amp, 0.4 ], \addToTail);
 
 )
 
@@ -81,12 +81,10 @@ s.boot;
 
 )
 
-~monitor.set(\in, ~mixerb);
+~monitor.set(\in, ~reverbb);
 ~monitor.free;
 
-s.sendMsg('/n_free', 1004)
-
-~mixer.free;
+~mixer.set(\amp, 0.4);
 
 (
 ~filter.free;
@@ -103,7 +101,7 @@ s.sendMsg('/n_free', 1004)
 ~tick = SynthDef(
 	\tick, {
 		arg out, amp=0.5;
-		var klank = Klank.ar(`[[400, 500, 750], [ 0.4, 0.3, 0.2 ], [1, 1, 1]], Impulse.ar(1, 0, amp));
+		var klank = Klank.ar(`[[400, 500, 750], [ 0.4, 0.3, 0.2 ], [1, 1, 1]], Impulse.ar(120/120, 0, amp));
 		Out.ar(out, Pan2.ar(klank, SinOsc.kr(0.1, 0, 0.3)));
 	}
 ).play(s, [\out, ~seqb]);
@@ -129,22 +127,21 @@ m = ();   // midi stuff
 m[\knob] = MIDIFunc.cc({
 	| v, c |
 	var chan = c - 21;
+	[ chan,v ].postln;
 	~knobs[chan].set(v / 127);
-}, (0..5));
-)
+}, (21..26));
 
 ~kparams = ();
 
-~kparams;
-
-(
 m[\knobp] = MIDIFunc.cc({
 	| v, c |
 	var chan = c - 27;
 	~kparams[chan] = v / 127;
-});
+}, (27..28));
 )
 
+~knobs[1].get
+~kparams
 
 // 1 - delayamount
 // 2 - delaytime
@@ -155,7 +152,6 @@ m[\knobp] = MIDIFunc.cc({
 // 7 - FM synth cRatio
 (
 ~delay.map(\amp, ~knobs[0]);
-
 ~delay.map(\delaytime, ~knobs[1]);
 ~filter.map(\freq, ~knobs[2]);
 ~lfo1.map(\freq, ~knobs[3]);
@@ -163,8 +159,16 @@ m[\knobp] = MIDIFunc.cc({
 
 )
 
-~delay.set(\decaytime, 1);
+~knobs[0].get;
+~delay.map(\amp, ~knobs[0]);
+~delay.set(\amp, 0.8);
+~delay.set(\decaytime, 1.5);
 
-~reverb.set(\reverbmix, 0.2);
+~reverb.set(\amp, 1.0);
+~reverb.set(\room, 1.5);
+~reverb.set(\damp, 0.9);
+~reverb.set(\reverbmix, 0.4);
+
+~mixer.set(\amp, 0.3);
 
 m[\knob].free;

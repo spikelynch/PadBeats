@@ -28,8 +28,6 @@ SynthDef(\kick,
 	}
 ).add;
 
-)
-(
 SynthDef(\snare,
 	{
 		arg out=0, amp=1, pan=0, atk=0.01, rel=0.5, hi=13000, lo=2500, cfreq=1500;
@@ -42,6 +40,8 @@ SynthDef(\snare,
 )
 
 
+Synth(\snare, [ \rel, 0.6, \hi, 2000, \lo, 100, \cfreq, 10000])
+Synth(\kick, [\rel, 0.1, \hi, 11800, \decay, 0.001, \namp, 0.3, \nlo, 800])
 
 
 (
@@ -68,7 +68,7 @@ SynthDef(\fm_basic, {
 (
 
 SynthDef(\klank, {
-	arg out=0, freq=440, a=1, partials=0.5, fade=0.1, amp=0.2, atk=0.01, rel=1, gate=1, pan=0;
+	arg out=0, freq=440, a=1, partials=0.5, fade=0.1, amp=0.2, atk=0.01, rel=1, pan=0;
 	var env, sig, nharms=10, harms, amps, rings, bank;
 	env = EnvGen.kr(Env.perc(atk, rel, amp), doneAction: Done.freeSelf);
 	harms = freq * ( [1] ++ (1..(nharms - 1)).collect({|n| (( n + 0.5) ** 2) * a}));
@@ -77,11 +77,11 @@ SynthDef(\klank, {
 	bank = `[ harms, amps, rings ];
 	//i = Dust.ar(1, amp);
 	//i = env * Impulse.ar(0, 0, amp);
-	sig = Klank.ar(bank, Dust.ar(1000, amp * 0.4));
+	sig = Klank.ar(bank, PinkNoise.ar(amp));
     Out.ar(out, Pan2.ar(sig * env, pan));
 }).add;
 )
 
 
 
-Synth(\fm_basic, [ \out, ~seqb,\rel, 1])
+Synth(\klank, [\amp, 1, \a, 1.4, \fade, 0.5, \partials, 1])
