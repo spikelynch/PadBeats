@@ -11,9 +11,9 @@ s.boot;
 ~delay.set(\amp, 0.8);
 ~delay.set(\decaytime, 1.5);
 
-~reverb.set(\amp, 1.0);
-~reverb.set(\room, 1.5);
-~reverb.set(\damp, 0.9);
+~reverb.set(\amp, 0.5);
+~reverb.set(\room, 0.5);
+~reverb.set(\damp, 0.5);
 ~reverb.set(\reverbmix, 0.4);
 
 ~delay.map(\amp, ~knobs[0]);
@@ -32,13 +32,10 @@ s.boot;
 
 
 )
+("./sequencer.scd").loadRelative();
 
+~metronome.value('metronome', 0, 4);
 
-(
-~recording ='tst';
+~remove.value('toms');
+~recording = '';
 
-~notes = List.new(0);
-
-~notes.removeAllSuchThat({ arg item, i; item[3] == 'chimes'});
-
-)

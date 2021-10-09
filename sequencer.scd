@@ -78,6 +78,19 @@ m[\keymidiOn] = MIDIFunc.noteOn({
 
 });
 
+~metronome = {
+	| label, i, j |
+	~notes.add([0, 64, ~getinst.value(i), label]);
+	(0..3).do({ |n| ~notes.add([n, 64, ~getinst.value(j), label]); });
+};
+
+~remove = {
+	| label |
+	~notes.removeAllSuchThat({ arg item, i; item[3] == label});
+};
+
 )
+
+
 
 //m[\keymidiOn].free;
