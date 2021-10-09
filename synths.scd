@@ -1,4 +1,6 @@
 
+// instruments
+
 (
 
 
@@ -37,14 +39,6 @@ SynthDef(\snare,
 		click = LPF.ar(WhiteNoise.ar(0.5 * amp), cfreq) * Line.kr(1, 0, rel * 0.1);		    Out.ar(out, Pan2.ar((click + snare) * env, pan));
 	}
 ).add;
-)
-
-
-Synth(\snare, [ \rel, 0.6, \hi, 2000, \lo, 100, \cfreq, 10000])
-Synth(\kick, [\rel, 0.1, \hi, 11800, \decay, 0.001, \namp, 0.3, \nlo, 800])
-
-
-(
 
 
 SynthDef(\fm_basic, {
@@ -63,9 +57,6 @@ SynthDef(\fm_basic, {
 	Out.ar(out, car);
 }).add;
 
-)
-
-(
 
 SynthDef(\klank, {
 	arg out=0, freq=440, a=1, partials=0.5, fade=0.1, amp=0.2, atk=0.01, rel=1, pan=0;
@@ -84,4 +75,3 @@ SynthDef(\klank, {
 
 
 
-Synth(\klank, [\amp, 1, \a, 1.4, \fade, 0.5, \partials, 1])
