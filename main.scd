@@ -35,7 +35,11 @@ s.boot;
 
 ~metronome.value('metronome', 0, 4);
 
-~recording = 'test';
+~recording = 'tests';
+s.sendMsg('/n_free', 1848)
+
+~notes;
+~remove.value('metronome');
 
 ~notes;
 
