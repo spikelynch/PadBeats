@@ -24,7 +24,7 @@
 		var klank = Klank.ar(`[[400, 500, 750], [ 0.4, 0.3, 0.2 ], [1, 1, 1]], Impulse.ar(120/120, 0, amp));
 		Out.ar(out, Pan2.ar(klank, SinOsc.kr(0.1, 0, 0.3)));
 	}
-).play(s, [\out, ~seqb]);
+).play(s, [\out, ~fxb]);
 )
 
 ~tick.free;

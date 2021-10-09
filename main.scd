@@ -26,4 +26,16 @@ s.boot;
 
 ("./midi.scd").loadRelative();
 
+
+
+(
+~delay.map(\amp, ~knobs[0]);
+
+~delay.map(\delaytime, ~knobs[1]);
+~filter.map(\freq, ~knobs[2]);
+~lfo1.map(\freq, ~knobs[3]);
+~lfo1.map(\amp, ~knobs[4]);
+
+)
+
 ("./synths.scd").loadRelative();
