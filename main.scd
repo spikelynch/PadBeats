@@ -25,7 +25,7 @@ s.boot;
 
 ~mixer.set(\amp, 0.3);
 
-~bpm = 140;
+~bpm = 100;
 ~beatsperbar = 4;
 
 
@@ -33,19 +33,8 @@ s.boot;
 
 ("./sequencer.scd").loadRelative();
 
-~metronome.value('metronome', 0, 4);
+~metronome.value('metronome', 4, 8);
 
-~recording = 'tests';
-s.sendMsg('/n_free', 1848)
-
-~notes;
-~remove.value('metronome');
-
-~notes;
-
-
-~remove.value('metronome');
-~recording = 'yrdy';
-(0..36).do{ |i| ~keys[i].postln;}
+~recording = '';
 
 

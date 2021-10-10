@@ -66,7 +66,6 @@ m[\keymidiOn] = MIDIFunc.noteOn({
 	i = midinote - ~note0;
 	sp = ~getinst.value(i);
 	abstime = if(~release.value(i), { beat }, { nil });
-	[i, time, sp].postln;
 	if(~recording != '', {
 		~notes.add((
 			\label: ~recording,
@@ -77,10 +76,9 @@ m[\keymidiOn] = MIDIFunc.noteOn({
 			\velocity: vel,
 			\synth: sp));
 		n = ~notes.size - 1;
-		~notes.last.postln;
-
 	} );
 	~keys[i] = [n, Synth.head(nil, sp[0], [ \out, ~fxb, \amp, vel / 127 ] ++ sp[1] ) ];
+
 });
 
 
@@ -95,8 +93,6 @@ m[\keymidiOff] = MIDIFunc.noteOff({
 			if( key[0] != nil, {
 				note = ~notes[key[0]];
 				~notes[key[0]][\duration] = beat - note[\abstime];
-				[ "key", i, "note", key[0], "duration", ~notes[key[0]][\duration] ].postln;
-				~notes[key[0]].postln;
 			});
 			key[1].release;
 			~keys[i] = nil;
@@ -106,26 +102,47 @@ m[\keymidiOff] = MIDIFunc.noteOff({
 });
 
 
-// notes don't seem to be released properly if they cross the bar line?
+
+~playseqkey = {
+	| i, note |
+	if( ~seqkeys[i].notNil && ~release.value(i), { ~releaseseqkey.value(i)});
+	~seqkeys[i] = Synth.head(nil, note[\synth][0], [ \out, ~fxb, \amp, note[\velocity] / 127 ] ++ note[\synth][1] );
+};
+
+
+~releaseseqkey = {
+	| i |
+	if( ~seqkeys[i].notNil, {
+		~seqkeys[i].release;
+		~seqkeys[i] = nil;
+	});
+};
+
 
 ~sequencer = t.play({
 	~notes.do({
-		arg note;
+		| note, ni |
 		var node, i = note[\key];
-		t.sched(note[\time], {
-			~seqkeys[i] = Synth.head(nil, note[\synth][0], [ \out, ~fxb, \amp, note[\velocity] / 127 ] ++ note[\synth][1] );
-		});
+		t.sched(note[\time], { ~playseqkey.value(i, note); });
 		if( ~release.value(note[\key]), {
 			if(note[\duration].notNil, {
-				[ "scheduling release of ", i, "at", note[\time] + note[\duration] ].postln;
-				t.sched(note[\time] + note[\duration], {
-					if( ~seqkeys[i].notNil, {
-						~seqkeys[i].release;
-						~seqkeys[i] = nil;
-					});
+				t.sched(note[\time] + note[\duration], { ~releaseseqkey.value(i) });
+				},
+			    {
+				// schedule an event in a bar's time to look for the duration then schedule
+				// another release event - this doesn't work quite as well as I would like
+				// which is why ~playseqkey has to make sure that the key is released
+				t.sched(~beatsperbar, {
+					if( note[\duration].notNil, {
+						t.sched(~beatsperbar - note[\time] + note[\duration], {
+							~releaseseqkey.value(i);
+						})
+					},
+					{
+						[ "warning: note without duration after waiting a bar", ni, i ].postln;
+						~releaseseqkey.value(i);
+					})
 				});
-			}, {
-				[ "warning: note without duration", note ].postln;
 			});
 		});
 	});
@@ -135,10 +152,9 @@ m[\keymidiOff] = MIDIFunc.noteOff({
 
 
 
-// make sure i and j are not releaseable~
 ~metronome = {
 	| label, i, j |
-	~notes.add((\label: label, \key: i, \time: 0, \abstime: 0, \duration: 0,  \velocity: 64, \synth: ~getinst.value(i)));
+	~notes.add((\label: label, \key: i, \time: 0, \abstime: 0, \duration: 0.125,  \velocity: 64, \synth: ~getinst.value(i)));
 	(0..3).do({
 		|n|
 		~notes.add(
@@ -147,7 +163,7 @@ m[\keymidiOff] = MIDIFunc.noteOff({
 				\key: j,
 				\time: n,
 				\abstime: 0,
-				\duration: 0,
+				\duration: 0.125,
 				\velocity: 64,
 				\synth: ~getinst.value(j)
 			)
@@ -156,7 +172,7 @@ m[\keymidiOff] = MIDIFunc.noteOff({
 
 ~remove = {
 	| label |
-	~notes.removeAllSuchThat({ arg note, i; note[\label] == label});
+	~notes.removeAllSuchThat({ | note| note[\label] == label});
 };
 
 
@@ -185,7 +201,8 @@ m[\keymidiOff] = MIDIFunc.noteOff({
 
 )
 
-~recording = 'test';
+// s.sendMsg('/n_free', 1089)
+
 
 
 // m[\keymidiOff].free;
