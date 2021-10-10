@@ -37,4 +37,11 @@ s.boot;
 
 ~recording = '';
 
+~f = { ~knobs[1].get }
 
+~knobs[1].getSynchronous
+
+~k = ~f.value;
+
+
+~k.get

@@ -17,9 +17,9 @@ MIDIIn.connect;
 m = ();   // midi stuff
 
 
-~knobs = (0..5).collect({|i| Bus.control(s, 1)});
+~knobs = (0..7).collect({|i| Bus.control(s, 1)});
 
-(0..5).do({ |i| ~knobs[i].set(0) });
+(0..7).do({ |i| ~knobs[i].set(0) });
 
 ~kparams = [ 0, 0 ];
 
@@ -27,14 +27,14 @@ m[\knob] = MIDIFunc.cc({
 	| v, c |
 	var chan = c - 21;
 	~knobs[chan].set(v / 127);
-}, (21..26));
+}, (21..28));
 
 
-m[\knobp] = MIDIFunc.cc({
-	| v, c |
-	var chan = c - 27;
-	~kparams[chan] = v / 127;
-}, (27..28));
+// m[\knobp] = MIDIFunc.cc({
+// 	| v, c |
+// 	var chan = c - 27;
+// 	~kparams[chan] = v / 127;
+// }, (27..28));
 
 
 

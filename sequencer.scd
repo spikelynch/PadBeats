@@ -43,8 +43,8 @@ t = TempoClock.new(~bpm / 120);
 		\freq, (i + 20).midicps,
 		\rel, 0.4,
 		\pan, 0,
-		\mRatio, ~kparams[0].linexp(0, 1, 0.2, 20),
-		\cRatio, ~kparams[1].linexp(0, 1, 0.2, 20)
+		\mRatio, ~knobs[6].getSynchronous.linexp(0, 1, 0.2, 20),
+		\cRatio, ~knobs[7].getSynchronous.linexp(0, 1, 0.2, 20)
 	] } ]
 ];
 
