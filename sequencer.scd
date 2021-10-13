@@ -16,6 +16,7 @@
 // [ synth, params ] are which synth and how to play it, from the ~insts data structure
 
 
+
 (
 
 t = TempoClock.new(~bpm / 120);
@@ -31,7 +32,7 @@ t = TempoClock.new(~bpm / 120);
 ~keys = Array.newClear(~noten);
 
 
-
+// todo - evaluate closures at schedule time or play time
 
 ~recording = '';
 
@@ -201,8 +202,3 @@ m[\keymidiOff] = MIDIFunc.noteOff({
 
 )
 
-// s.sendMsg('/n_free', 1089)
-
-
-
-// m[\keymidiOff].free;

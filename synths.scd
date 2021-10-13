@@ -1,6 +1,8 @@
 
 // instruments
 
+
+
 (
 
 
@@ -71,6 +73,78 @@ SynthDef(\klank, {
 	sig = Klank.ar(bank, PinkNoise.ar(amp));
     Out.ar(out, Pan2.ar(sig * env, pan));
 }).add;
+
+
+SynthDef(\tinkle, {
+	arg out=0, freq=440, a=1, partials=0.5, fade=0.1, rate=10, amp=0.2, atk=0.01, rel=1, pan=0;
+	var env, sig, ifreq, nharms=10, harms, amps, rings, bank;
+	env = EnvGen.kr(Env.perc(atk, rel, amp), doneAction: Done.freeSelf);
+	harms = freq * ( [1] ++ (1..(nharms - 1)).collect({|n| (( n + 0.5) ** 2) * a}));
+	amps = Array.geom(nharms, 1 / nharms, fade);
+	rings = Array.geom(nharms, 1, partials);
+	bank = `[ harms, amps, rings ];
+	sig = Klank.ar(bank, Impulse.ar(rate + rate * env, 0, amp * 5));
+    Out.ar(out, Pan2.ar(sig * env, pan));
+}).add;
+
+
+SynthDef(\sine, {
+	arg out=0, freq=440, amp=0.2, atk=0.01, decay=0.02, rel=1, sustain=0.8, gate=1, pan=0;
+	var env, sigs, freqs, detunes;
+	env = EnvGen.kr(Env.adsr(atk, decay, sustain, rel, amp), gate, doneAction: Done.freeSelf);
+	Out.ar(out, Pan2.ar(SinOsc.ar(freq) * amp * env, pan));
+}).add;
+
+SynthDef(\square, {
+	arg out=0, freq=440, amp=0.2, atk=0.01, decay=0.02, width = 0.5, rel=1, sustain=0.8, gate=1, pan=0;
+	var env, sigs;
+	env = EnvGen.kr(Env.adsr(atk, decay, sustain, rel, amp), gate, doneAction: Done.freeSelf);
+	Out.ar(out, Pan2.ar(Pulse.ar(freq, width) * amp * env, pan));
+}).add;
+
+
+SynthDef(\detunesaw, {
+	arg out=0, freq=440, detune=0.01, amp=0.2, atk=0.01, decay=0.02, noise=0.01, rel=1, sustain=0.8, gate=1, pan=0;
+	var env, sigs, freqs;
+	env = EnvGen.kr(Env.adsr(atk, decay, sustain, rel, amp * 0.5), gate, doneAction: Done.freeSelf);
+	sigs = ((WhiteNoise.ar(noise) ! 2) + Saw.ar([freq, freq * (1 + detune)])) * env;
+	Out.ar(out, Pan2.ar(Mix.ar(sigs), pan));
+}).add;
 )
 
 
+
+
+(
+SynthDef(\tine, {
+	arg out=0, freq=440, a=1, partials=0.5, fade=0.1, amp=0.2, atk=0.01, rel=1, pan=0;
+	var env, sig, ifreq, nharms=10, harms, amps, rings, bank;
+	env = EnvGen.kr(Env.perc(atk, rel, amp), doneAction: Done.freeSelf);
+	harms = freq * ( [1] ++ (1..(nharms - 1)).collect({|n| (( n + 0.5) ** 2) * a}));
+	amps = Array.geom(nharms, 1 / nharms, fade);
+	rings = Array.geom(nharms, 1, partials);
+	bank = `[ harms, amps, rings ];
+	sig = Klank.ar(bank, Impulse.ar(0));
+    Out.ar(out, Pan2.ar(sig * env * 4, pan));
+}).add;
+)
+
+Synth(\tine, [ \partials, 1, \fade, 0.4,\amp, 0.5, \a, 1.1, \atk, 0]);
+
+// ~saw = Synth(\detunesaw, [\noise, 0.02]);
+//
+// ~saw.release;
+//
+// s.sendMsg('/n_free', 1010)
+// (5 / 2).asInteger
+//
+//
+// ~saw = Synth(\detunesaw, [ \detune, 0.001]);
+//
+// ~saw.release;
+// ~saw.free;
+// s.sendMsg('/n_free', 1307)
+//
+// (((-4..4) * 0.01) + 1) * 440
+//
+// (((-3..3) * 0.01) + 1)

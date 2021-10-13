@@ -29,14 +29,6 @@ m[\knob] = MIDIFunc.cc({
 	~knobs[chan].set(v / 127);
 }, (21..28));
 
-
-// m[\knobp] = MIDIFunc.cc({
-// 	| v, c |
-// 	var chan = c - 27;
-// 	~kparams[chan] = v / 127;
-// }, (27..28));
-
-
-
 )
+
 

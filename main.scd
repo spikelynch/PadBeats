@@ -34,12 +34,13 @@ s.boot;
 ("./sequencer.scd").loadRelative();
 
 ~metronome.value('metronome', 4, 8);
+~remove.value('metronome');
 
 ~recording = '';
 
 ~f = { ~knobs[1].get }
 
-~knobs[1].getSynchronous
+~knobs[6].getSynchronous
 
 ~k = ~f.value;
 
