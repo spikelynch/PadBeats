@@ -36,26 +36,17 @@ t = TempoClock.new(~bpm / 120);
 
 ~recording = '';
 
-~insts = [
-	[ \kick,  4,  { |i| [ \lo, i * 20 + 60,          \pan, 0  ] } ],
-	[ \snare, 8,  { |i| [ \hi, (i - 4) * 5000 + 5000, \cfreq, 10000, \pan, 0.1   ]  }  ],
-	[ \hihat, 12, { |i| [ \filter, (i - 8) * 1000 + 2000 ] }, \pan, -0.1 ],
-	[ \fm_basic, 41, { |i| [
-		\freq, (i + 20).midicps,
-		\rel, 0.4,
-		\pan, 0,
-		\mRatio, ~knobs[6].getSynchronous.linexp(0, 1, 0.2, 20),
-		\cRatio, ~knobs[7].getSynchronous.linexp(0, 1, 0.2, 20)
-	] } ]
-];
+~insts = [ ];
 
-~release = { | i | ( i > 11 ) };  // hack: return true if this synth needs releasing
+
+
+~release = { | i | false };  // hack: return true if this synth needs releasing
 
 
 ~getinst = {
 	|i|
 	var inst = ~insts.select({|inst| i < inst[1] }).first;
-	[ inst[0], inst[2].value(i) ]
+	inst[2];
 };
 
 
@@ -64,7 +55,8 @@ t = TempoClock.new(~bpm / 120);
 ~playseqkey = {
 	| i, note |
 	if( ~seqkeys[i].notNil && ~release.value(i), { ~releaseseqkey.value(i)});
-	~seqkeys[i] = Synth.head(nil, note[\synth][0], [ \out, ~fxb, \amp, note[\velocity] / 127 ] ++ note[\synth][1] );
+	//~seqkeys[i] = Synth.head(nil, note[\synth][0], [ \out, ~fxb, \amp, note[\velocity] / 127 ] ++ note[\synth][1] );
+	~seqkeys[i] = note[\fn].value(i, note);
 };
 
 
@@ -108,23 +100,23 @@ t = TempoClock.new(~bpm / 120);
 }, quant: ~beatsperbar);
 
 
-~metronome = {
-	| label, i, j |
-	~notes.add((\label: label, \key: i, \time: 0, \abstime: 0, \duration: 0.125,  \velocity: 64, \synth: ~getinst.value(i)));
-	(1..~beatsperbar).do({
-		|n|
-		~notes.add(
-			(
-				\label: label,
-				\key: j,
-				\time: n - 1,
-				\abstime: 0,
-				\duration: 0.125,
-				\velocity: 64,
-				\synth: ~getinst.value(j)
-			)
-	)});
-};
+// ~metronome = {
+// 	| label, i, j |
+// 	~notes.add((\label: label, \key: i, \time: 0, \abstime: 0, \duration: 0.125,  \velocity: 64, \synth: ~getinst.value(i)));
+// 	(1..~beatsperbar).do({
+// 		|n|
+// 		~notes.add(
+// 			(
+// 				\label: label,
+// 				\key: j,
+// 				\time: n - 1,
+// 				\abstime: 0,
+// 				\duration: 0.125,
+// 				\velocity: 64,
+// 				\synth: ~getinst.value(j)
+// 			)
+// 	)});
+// };
 
 ~remove = {
 	| label |
@@ -157,4 +149,10 @@ t = TempoClock.new(~bpm / 120);
 
 )
 
-
+(
+~getinst = {
+	|i|
+	var inst = ~insts.select({|inst| i < inst[1] }).first;
+	inst[2];
+};
+)

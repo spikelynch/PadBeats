@@ -4,10 +4,10 @@
 (
 m[\keymidiOn] = MIDIFunc.noteOn({
 	| vel, midinote |
-	var beat = t.beats, bar = t.bar, time, s, i, sp, n = nil, abstime;
+	var beat = t.beats, bar = t.bar, time, s, i, sp, n = nil, fn, abstime;
 	time = beat - t.bars2beats(bar);
 	i = midinote - ~note0;
-	sp = ~getinst.value(i);
+	fn = ~getinst.value(i);
 	abstime = if(~release.value(i), { beat }, { nil });
 	if(~recording != '', {
 		~notes.add((
@@ -17,10 +17,11 @@ m[\keymidiOn] = MIDIFunc.noteOn({
 			\abstime: abstime,
 			\duration: nil,
 			\velocity: vel,
-			\synth: sp));
+			\fn: fn));
 		n = ~notes.size - 1;
 	} );
-	~keys[i] = [n, Synth.head(nil, sp[0], [ \out, ~fxb, \amp, vel / 127 ] ++ sp[1] ) ];
+	// fn should return a Synth if it needs to be released
+	~keys[i] = [n, fn.value(i, vel) ];
 
 });
 
