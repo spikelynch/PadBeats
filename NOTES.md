@@ -1,25 +1,5 @@
 ## TODO
 
-Sort out the levels in the effects chain:
+Make the sequencer be able to trigger functions - which can play synths, set levels on synths, do anything - these should return the 'main' synth if it needs to be released (and return nil if there's no follow-up needed).
 
-- main, delay, reverb
-
-Set the effects chain mix in SC, not via the launchkey
-
-// this is done
-
-Add a filter //done
-
-and LFO into the effects chain before the delay
-
-Set up the pot controllers as follows:
-
-0 - tempo
-1 - main amp
-2 - delaytime
-3 - filter
-4 - LFO rate
-5 - LFO amount
-6 - FM synth mRatio
-7 - FM synth cRatio
-
+Do this in a way which allows parameters to be captured when the notes are recorded, or when they are played - both are useful

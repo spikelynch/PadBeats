@@ -60,49 +60,6 @@ t = TempoClock.new(~bpm / 120);
 
 
 
-m[\keymidiOn] = MIDIFunc.noteOn({
-	| vel, midinote |
-	var beat = t.beats, bar = t.bar, time, s, i, sp, n = nil, abstime;
-	time = beat - t.bars2beats(bar);
-	i = midinote - ~note0;
-	sp = ~getinst.value(i);
-	abstime = if(~release.value(i), { beat }, { nil });
-	if(~recording != '', {
-		~notes.add((
-			\label: ~recording,
-			\key: i,
-			\time: time,
-			\abstime: abstime,
-			\duration: nil,
-			\velocity: vel,
-			\synth: sp));
-		n = ~notes.size - 1;
-	} );
-	~keys[i] = [n, Synth.head(nil, sp[0], [ \out, ~fxb, \amp, vel / 127 ] ++ sp[1] ) ];
-
-});
-
-
-m[\keymidiOff] = MIDIFunc.noteOff({
-	| vel, midinote |
-	var beat = t.beats, bar = t.bar, time, s, i, key, note;
-	time = beat - t.bars2beats(bar);
-	i = midinote - ~note0;
-	if( ~release.value(i), {
-		key = ~keys[i];
-		if( key != nil, {
-			if( key[0] != nil, {
-				note = ~notes[key[0]];
-				~notes[key[0]][\duration] = beat - note[\abstime];
-			});
-			key[1].release;
-			~keys[i] = nil;
-		});
-	});
-
-});
-
-
 
 ~playseqkey = {
 	| i, note |
@@ -151,18 +108,16 @@ m[\keymidiOff] = MIDIFunc.noteOff({
 }, quant: ~beatsperbar);
 
 
-
-
 ~metronome = {
 	| label, i, j |
 	~notes.add((\label: label, \key: i, \time: 0, \abstime: 0, \duration: 0.125,  \velocity: 64, \synth: ~getinst.value(i)));
-	(0..3).do({
+	(1..~beatsperbar).do({
 		|n|
 		~notes.add(
 			(
 				\label: label,
 				\key: j,
-				\time: n,
+				\time: n - 1,
 				\abstime: 0,
 				\duration: 0.125,
 				\velocity: 64,
@@ -201,4 +156,5 @@ m[\keymidiOff] = MIDIFunc.noteOff({
 
 
 )
+
 

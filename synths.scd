@@ -110,12 +110,7 @@ SynthDef(\detunesaw, {
 	sigs = ((WhiteNoise.ar(noise) ! 2) + Saw.ar([freq, freq * (1 + detune)])) * env;
 	Out.ar(out, Pan2.ar(Mix.ar(sigs), pan));
 }).add;
-)
 
-
-
-
-(
 SynthDef(\tine, {
 	arg out=0, freq=440, a=1, partials=0.5, fade=0.1, amp=0.2, atk=0.01, rel=1, pan=0;
 	var env, sig, ifreq, nharms=10, harms, amps, rings, bank;
@@ -129,7 +124,6 @@ SynthDef(\tine, {
 }).add;
 )
 
-Synth(\tine, [ \partials, 1, \fade, 0.4,\amp, 0.5, \a, 1.1, \atk, 0]);
 
 // ~saw = Synth(\detunesaw, [\noise, 0.02]);
 //
