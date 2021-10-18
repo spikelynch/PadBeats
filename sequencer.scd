@@ -56,6 +56,7 @@ t = TempoClock.new(~bpm / 120);
 	| i, note |
 	if( ~seqkeys[i].notNil && ~release.value(i), { ~releaseseqkey.value(i)});
 	//~seqkeys[i] = Synth.head(nil, note[\synth][0], [ \out, ~fxb, \amp, note[\velocity] / 127 ] ++ note[\synth][1] );
+	[ "play seq key", i, note[\fn] ].postln;
 	~seqkeys[i] = note[\fn].value(i, note);
 };
 
@@ -100,23 +101,23 @@ t = TempoClock.new(~bpm / 120);
 }, quant: ~beatsperbar);
 
 
-// ~metronome = {
-// 	| label, i, j |
-// 	~notes.add((\label: label, \key: i, \time: 0, \abstime: 0, \duration: 0.125,  \velocity: 64, \synth: ~getinst.value(i)));
-// 	(1..~beatsperbar).do({
-// 		|n|
-// 		~notes.add(
-// 			(
-// 				\label: label,
-// 				\key: j,
-// 				\time: n - 1,
-// 				\abstime: 0,
-// 				\duration: 0.125,
-// 				\velocity: 64,
-// 				\synth: ~getinst.value(j)
-// 			)
-// 	)});
-// };
+~metronome = {
+	| label, i, j |
+	~notes.add((\label: label, \key: i, \time: 0, \abstime: 0, \duration: 0.125,  \velocity: 64, \synth: ~getinst.value(i)));
+	(1..~beatsperbar).do({
+		|n|
+		~notes.add(
+			(
+				\label: label,
+				\key: j,
+				\time: n - 1,
+				\abstime: 0,
+				\duration: 0.125,
+				\velocity: 64,
+				\synth: ~getinst.value(j)
+			)
+	)});
+};
 
 ~remove = {
 	| label |
@@ -147,12 +148,4 @@ t = TempoClock.new(~bpm / 120);
  };
 
 
-)
-
-(
-~getinst = {
-	|i|
-	var inst = ~insts.select({|inst| i < inst[1] }).first;
-	inst[2];
-};
 )
