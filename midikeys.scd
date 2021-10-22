@@ -27,8 +27,6 @@ m[\keymidiOn] = MIDIFunc.noteOn({
 	} );
 	// store the Synth (if there is one) in keys so it can be released
 	~keys[i] = [n, fn.value(i, note) ];
-	[ "key press", i, ~keys[i] ].postln;
-
 });
 
 
@@ -39,7 +37,6 @@ m[\keymidiOff] = MIDIFunc.noteOff({
 	i = midinote - ~note0;
 	if( ~release.value(i), {
 		key = ~keys[i];
-		[ "key release", i, ~keys[i] ].postln;
 		if( key != nil, {
 			if( key[0] != nil, {
 				note = ~notes[key[0]];
