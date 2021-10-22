@@ -17,6 +17,7 @@
 
 
 
+
 (
 
 t = TempoClock.new(~bpm / 120);
@@ -40,7 +41,7 @@ t = TempoClock.new(~bpm / 120);
 
 
 
-~release = { | i | false };  // hack: return true if this synth needs releasing
+~release = { | i | i > 12 };  // hack: return true if this synth needs releasing
 
 
 ~getinst = {

@@ -45,10 +45,10 @@ SynthDef(\snare,
 
 SynthDef(\fm_basic, {
 	arg out=0, freq=440, saw=0, mRatio=1, cRatio=1, index=1, iScale=5,
-	amp=0.2, atk=0.01, rel=3, gate=1, pan=0;
+	amp=0.2, atk=0.01, decay=0.2, sustain=1.0,rel=3, gate=1, pan=0;
 	var car, mod, env, iEnv, refsaw;
-	env = EnvGen.kr(Env.adsr(atk, rel, amp), gate, doneAction: Done.freeSelf);
-	iEnv = EnvGen.kr(Env.new([index, index * iScale, index], [atk, rel]), gate);
+	env = EnvGen.kr(Env.adsr(atk, decay, sustain, release), gate, doneAction: Done.freeSelf);
+	iEnv = EnvGen.kr(Env.adsr(atk, decay, sustain, release), gate) * iScale + index;
 	//env = EnvGen.kr(Env.perc(atk, rel, amp), doneAction: Done.freeSelf);
 	//iEnv = EnvGen.kr(Env.new([index, index * iScale, index], [atk, rel]));
 
@@ -121,6 +121,27 @@ SynthDef(\tine, {
 	bank = `[ harms, amps, rings ];
 	sig = Klank.ar(bank, Impulse.ar(0));
     Out.ar(out, Pan2.ar(sig * env * 4, pan));
+}).add;
+)
+
+
+(
+
+
+SynthDef(\fm_basic, {
+	arg out=0, freq=440, saw=0, mRatio=1, cRatio=1, index=1, iScale=5,
+	amp=0.2, atk=0.01, decay=0.2, sustain=1.0,rel=3, gate=1, pan=0;
+	var car, mod, env, iEnv, refsaw;
+	env = EnvGen.kr(Env.adsr(atk, decay, sustain, rel), gate, doneAction: Done.freeSelf);
+	iEnv = EnvGen.kr(Env.adsr(atk, decay, sustain, rel), gate) * iScale + index;
+	//env = EnvGen.kr(Env.perc(atk, rel, amp), doneAction: Done.freeSelf);
+	//iEnv = EnvGen.kr(Env.new([index, index * iScale, index], [atk, rel]));
+
+	refsaw = Saw.ar(freq, saw) * env * amp;
+	mod = SinOsc.ar(freq * mRatio, mul:freq * mRatio * iEnv);
+	car = SinOsc.ar(freq * cRatio + mod) * env * amp;
+	car = Pan2.ar(car + refsaw, pan);
+	Out.ar(out, car);
 }).add;
 )
 
