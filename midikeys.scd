@@ -20,7 +20,7 @@ m[\keymidiOn] = MIDIFunc.noteOn({
 			\synth: sp));
 		n = ~notes.size - 1;
 	} );
-	~keys[i] = [n, Synth.head(nil, sp[0], [ \out, ~fxb, \amp, vel / 127 ] ++ sp[1] ) ];
+	~keys[i] = [n, Synth.head(nil, sp[0], [ \amp, vel / 127 ] ++ sp[1] ) ];
 
 });
 

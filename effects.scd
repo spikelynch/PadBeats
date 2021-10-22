@@ -32,9 +32,11 @@
 (
 ~fxb = Bus.audio(s, 2);
 ~filterb = Bus.audio(s, 2);
+~grainsb = Bus.audio(s, 2);
 ~delayb = Bus.audio(s, 2);
 ~reverbb = Bus.audio(s, 2);
 ~lfob = Bus.control(s, 1);
+
 
 
 ~lfo1 = SynthDef(
@@ -56,6 +58,60 @@
 		Out.ar(out, filt);
 	}
 ).play(s, [ \in, ~fxb, \out, ~filterb, \mod, ~lfob, \amp, 1.0  ], \addToTail);
+
+
+~frippbuffer = Buffer.alloc(s, s.sampleRate * ~buflength, 1);
+
+// The sequencer uses 'restart' to trigger the recorder to the
+// start of the buffer so that it records in sync
+
+~fripptrig = Bus.control(s, 1);
+
+~bufrecorder = SynthDef(
+	\fripp_record,
+	{
+		arg in = 2, buffer = 0, restart = 0, mix = 0.25, record = 0.0, feedback = 0.0;
+		var insig, fbsig, trigger = In.kr(restart, 1);
+		insig = record * Mix.ar(In.ar(in, 2));
+		RecordBuf.ar(insig, buffer, 0, mix, 1 - mix, loop: 1, trigger: trigger);
+    }
+).play(s, [\in, ~grainsb, \record, 1.0, \buffer, ~frippbuffer, \restart, ~fripptrig ], \addToTail);
+
+~grainposb = Bus.control(s, 1); // this is mapped to the buffer and should
+                                // be synced to the sequencer clock
+
+~grains = SynthDef(
+	\grains,
+	{
+		arg in=2, out=0, posb, pt=0.5, trate=120, size=12, pitch=1, amp=1.0, sweep=0.25, blur=0.2,buffer, gain=1.0;
+		var dur, blen, clk, chor, p, pos, pan, grains, passthrough;
+		passthrough = In.ar(in, 2) * pt;
+		p = In.kr(posb, 1);
+		// pos = 0.5 + LFSaw.kr(speed, 0, 0.5);
+		dur = size / trate;
+		blen = BufDur.kr(buffer);
+		clk = Impulse.kr(trate);
+		pan = WhiteNoise.kr(1 - sweep) + (2 * sweep * (p - 1));
+		pos = Wrap.kr(p + WhiteNoise.kr(blur), 0, 1);
+		grains = TGrains.ar(2, clk, buffer, pitch, pos * blen, dur, pan, amp * gain);
+		Out.ar(out, passthrough + grains);
+	}
+).play(s, [\in, ~grainsb, \out, ~filterb, \posb, ~grainposb, \buffer, ~frippbuffer, \amp, 0.5, \pt, 0.5, \blur, 0.2]);
+
+
+// ~scramble = SynthDef(
+// 	\scramble,
+// 	{
+// 		arg in, out, shift=1;
+// 		var chain;
+// 		chain = FFT(LocalBuf(2048), In.ar(in, 1).distort);
+// 		chain = PV_BinScramble(chain, 0.5, 0.2, Impulse.kr(shift));
+// 		Out.ar(out, IFFT.ar(chain));
+// 	}
+// ).play(s, [\in, ~fxb, \out, ~filterb, \shift, 1 ], \addToTail);
+
+
+
 
 ~delay = SynthDef(
     \delay, {
@@ -84,4 +140,25 @@
 ).play(s, [ \passthrough, ~fxb, \filter, ~filterb, \delay, ~delayb, \reverb, ~reverbb, \out, 0, \amp, 0.4, \pt, 0.2 ], \addToTail);
 
 
+)
+
+
+(
+~grains = SynthDef(
+	\grains,
+	{
+		arg in=2, out=0, posb, pt=0.5, trate=120, size=12, pitch=1, amp=1.0, sweep=0.25, blur=0.2,buffer, gain=1.0;
+		var dur, blen, clk, chor, p, pos, pan, grains, passthrough;
+		passthrough = In.ar(in, 2) * pt;
+		p = In.kr(posb, 1);
+		// pos = 0.5 + LFSaw.kr(speed, 0, 0.5);
+		dur = size / trate;
+		blen = BufDur.kr(buffer);
+		clk = Impulse.kr(trate);
+		pan = WhiteNoise.kr(1 - sweep) + (2 * sweep * (p - 1));
+		pos = Wrap.kr(p + WhiteNoise.kr(blur), 0, 1);
+		grains = TGrains.ar(2, clk, buffer, pitch, pos * blen, dur, pan, amp * gain);
+		Out.ar(out, passthrough + grains);
+	}
+).play(s, [\in, ~grainsb, \out, ~filterb, \posb, ~grainposb, \buffer, ~frippbuffer, \amp, 0.5, \pt, 0.5, \blur, 0.2]);
 )

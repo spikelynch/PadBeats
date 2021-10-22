@@ -24,6 +24,27 @@ t = TempoClock.new(~bpm / 120);
 ~note0 = 36; // this is the midi value of the lowest key on the controller
 ~noten = 37; // this is the number of keys
 
+~seqramp = nil;
+
+// set up a control bus with a ramp that plays in sync with the sequencer
+// for the granulator effect (and anything else we need it for)
+
+SynthDef(
+	\seqramp, {
+		arg out, speed=1;
+		Out.kr(out, 0.5 + LFSaw.kr(speed, 0, 0.5));
+	}
+).add;
+
+~seqramp = nil;
+
+t.play({
+	~seqramp = Synth(\seqramp, [ \out, ~grainposb, \speed, ~bpm / (60 * ~beatsperbar)]);
+	SynthDef(\friptrig, {
+		arg out=1;
+		Out.kr(out, Impulse.kr(0))
+	}).play(s, [ \out, ~friptrig ]);
+}, quant: ~beatsperbar);
 
 
 ~notes = List.new(0);
@@ -64,7 +85,7 @@ t = TempoClock.new(~bpm / 120);
 ~playseqkey = {
 	| i, note |
 	if( ~seqkeys[i].notNil && ~release.value(i), { ~releaseseqkey.value(i)});
-	~seqkeys[i] = Synth.head(nil, note[\synth][0], [ \out, ~fxb, \amp, note[\velocity] / 127 ] ++ note[\synth][1] );
+	~seqkeys[i] = Synth.head(nil, note[\synth][0], [ \amp, note[\velocity] / 127 ] ++ note[\synth][1] );
 };
 
 
@@ -156,5 +177,7 @@ t = TempoClock.new(~bpm / 120);
 
 
 )
+
+
 
 

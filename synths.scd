@@ -70,7 +70,7 @@ SynthDef(\klank, {
 	bank = `[ harms, amps, rings ];
 	//i = Dust.ar(1, amp);
 	//i = env * Impulse.ar(0, 0, amp);
-	sig = Klank.ar(bank, PinkNoise.ar(amp));
+	sig = Klank.ar(bank, PinkNoise.ar(amp * 0.5));
     Out.ar(out, Pan2.ar(sig * env, pan));
 }).add;
 
@@ -122,23 +122,14 @@ SynthDef(\tine, {
 	sig = Klank.ar(bank, Impulse.ar(0));
     Out.ar(out, Pan2.ar(sig * env * 4, pan));
 }).add;
-)
+);
 
 
-// ~saw = Synth(\detunesaw, [\noise, 0.02]);
-//
-// ~saw.release;
-//
-// s.sendMsg('/n_free', 1010)
-// (5 / 2).asInteger
-//
-//
-// ~saw = Synth(\detunesaw, [ \detune, 0.001]);
-//
-// ~saw.release;
-// ~saw.free;
-// s.sendMsg('/n_free', 1307)
-//
-// (((-4..4) * 0.01) + 1) * 440
-//
-// (((-3..3) * 0.01) + 1)
+SynthDef(\filtsaw, {
+	arg out=0, freq=440, detune=0.01, amp=0.2, atk=0.01, decay=0.02, noise=0.01, rel=1, sustain=0.8, gate=1, pan=0, filthi=12000, filtlo=400;
+	var env, filtenv, sigs, freqs;
+	env = EnvGen.kr(Env.adsr(atk, decay, sustain, rel, amp * 0.5), gate, doneAction: Done.freeSelf);
+	filtenv = env * (filthi - filtlo) + filtlo;
+	sigs = ((WhiteNoise.ar(noise) ! 2) + Saw.ar([freq, freq * (1 + detune)])) * env;
+	Out.ar(out, Pan2.ar(Mix.ar(DFM1.ar(sigs, filtenv)), pan));
+}).add;
