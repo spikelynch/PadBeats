@@ -47,7 +47,7 @@ t = TempoClock.new(~bpm / 120);
 ~getinst = {
 	|i|
 	var inst = ~insts.select({|inst| i < inst[1] }).first;
-	inst[2];
+	inst;
 };
 
 
@@ -102,18 +102,21 @@ t = TempoClock.new(~bpm / 120);
 
 ~addseqnote = {
 	arg label, i, vel, time, abstime, duration;
-	var fn, note;
-	fn = ~getinst.value(i);
+	var inst, note;
+	[ label, i, vel, time, abstime, duration ].postln;
+	inst = ~getinst.value(i);
 	note = (
-			\label: label,
-			\key: i,
-			\time: time,
-			\abstime: abstime,
-			\duration: duration,
-			\velocity: vel,
-			\fn: fn
+		\label: label,
+		\inst: inst[0],
+		\key: i,
+		\time: time,
+		\abstime: abstime,
+		\duration: duration,
+		\velocity: vel,
+		\fn: inst[2]
 	);
 	if( label != '', { ~notes.add(note);} );
+	[ inst, note ];
 };
 
 
@@ -153,3 +156,4 @@ t = TempoClock.new(~bpm / 120);
 
 
 )
+
