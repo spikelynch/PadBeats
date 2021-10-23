@@ -25,6 +25,7 @@
 // 6 - FM synth mRatio
 // 7 - FM synth cRatio
 
+// todo: the ~effectb bus should be the one going into an effect, not out
 
 
 // set up the effects chain: -> filter -> delay -> reverb -> out

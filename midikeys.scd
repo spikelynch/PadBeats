@@ -1,27 +1,23 @@
 
 // midi keybindings - load this after the sequencer is loaded
 
+
 (
+
+
+
 m[\keymidiOn] = MIDIFunc.noteOn({
 	| vel, midinote |
-	var beat = t.beats, bar = t.bar, time, s, i, sp, n = nil, abstime;
+	var beat = t.beats, bar = t.bar, time, s, i, sp, n = nil, note, inote, abstime;
 	time = beat - t.bars2beats(bar);
 	i = midinote - ~note0;
-	sp = ~getinst.value(i);
 	abstime = if(~release.value(i), { beat }, { nil });
+	inote = ~addseqnote.value(~recording, i, vel, time, abstime, nil);
 	if(~recording != '', {
-		~notes.add((
-			\label: ~recording,
-			\key: i,
-			\time: time,
-			\abstime: abstime,
-			\duration: nil,
-			\velocity: vel,
-			\synth: sp));
 		n = ~notes.size - 1;
 	} );
-	~keys[i] = [n, Synth.head(nil, sp[0], [ \amp, vel / 127 ] ++ sp[1] ) ];
-
+	// play the note and store the Synth (if there is one) in keys so it can be released
+	~keys[i] = [n, inote[0][2].value(i, inote[1]) ]; // this is nasty
 });
 
 
