@@ -5,6 +5,15 @@ Server.killAll;
 
 s.boot;
 
+
+(
+~bpm = 100;
+~beatsperbar = 4;
+
+~buflength = ~beatsperbar * 60 / ~bpm;
+
+)
+
 ("./effects.scd").loadRelative();
 
 ("./synths.scd").loadRelative();
@@ -23,7 +32,7 @@ s.boot;
 )
 ~reverb.set(\amp, 0.9);
 
-~delay.set(\amp, 0.3);
+~delay.set(\amp, 0);
 
 ~delay.set(\delaytime, 120 / 98);
 (
@@ -32,28 +41,26 @@ s.boot;
 
 )
 
-~reverb.set(\amp, 0.9);
+~reverb.set(\amp, 0.4);
 ~reverb.set(\room, 1.5);
 
+~grainsb.set(\pitch, 2);
 
 (
-~delay.map(\amp, ~knobs[0]);
-~delay.map(\delaytime, ~knobs[1]);
+~reverb.map(\amp, ~knobs[0]);
+~reverb.map(\reverbmix, ~knobs[1]);
 ~filter.map(\freq, ~knobs[2]);
 ~lfo1.map(\freq, ~knobs[3]);
 ~lfo1.map(\amp, ~knobs[4]);
-
+~grains.map(\mix, ~knobs[5]);
+~grains.map(\pitch, ~knobs[6]);
+~grains.map(\blur, ~knobs[7]);
 )
 
-90/120
-
-(
-~bpm = 98;
-~beatsperbar = 4;
 
 
 ("./sequencer.scd").loadRelative();
-)
+
 
 ("./midikeys.scd").loadRelative();
 
@@ -82,7 +89,7 @@ s.boot;
 
 ~insts = [
 	[ \kickt,  4,  { |i, note| Synth.head(nil, \kick, [ \rel, 0.2, \noise, 0.9, \hi, i * 40 + 80, \lo, i * 20 + 60, \pan, 0, \out, ~delayb  ]); nil } ],
-	[ \snaret, 8,  { |i, note| Synth.head(nil, \snare, [ \hi, (i - 4) * 5000 + 5000, \cfreq, 10000, \pan, (i - 10) * 0.2, \out, ~decayb   ]); nil;  }  ],
+	[ \snaret, 8,  { |i, note| Synth.head(nil, \snare, [ \hi, (i - 4) * 5000 + 5000, \cfreq, 10000, \pan, (i - 10) * 0.2, \out, ~delayb   ]); nil;  }  ],
 	[ \resont,  12,  {
 		|i, note|
 		Synth.head(nil, \klank, [
@@ -93,7 +100,7 @@ s.boot;
 			\fade, 0.7,
 			\pan, (i - 6) * 0.4,
 			\amp, note[\velocity] / 200,
-			\out, ~decayb
+			\out, ~delayb
 	]);
 		nil;
 	} ],
@@ -101,7 +108,7 @@ s.boot;
 		| i, note |
 		var freq = ~scale.degreeToFreq(i, 110, 0);
 		Synth.head(nil, \detunesaw, [
-			\out, ~fxb,
+			\out, ~grainsb,
 			\freq, freq,
 			\atk, 1,
 			\rel, 1.6,

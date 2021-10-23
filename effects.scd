@@ -38,8 +38,6 @@
 ~reverbb = Bus.audio(s, 2);
 ~lfob = Bus.control(s, 1);
 
-
-
 ~lfo1 = SynthDef(
 	\lfo, {
 		arg out, freq=0.4, freqlo=0.01, freqhi=20, amp=0;
@@ -47,7 +45,6 @@
 		Out.kr(out, SinOsc.kr(mfreq, 0, amp));
 	}
 ).play(s, [ \out, ~lfob ], \addToTail);
-
 
 ~filter = SynthDef(
 	\filter, {
@@ -59,7 +56,6 @@
 		Out.ar(out, filt);
 	}
 ).play(s, [ \in, ~fxb, \out, ~filterb, \mod, ~lfob, \amp, 1.0  ], \addToTail);
-
 
 ~frippbuffer = Buffer.alloc(s, s.sampleRate * ~buflength, 1);
 
@@ -130,6 +126,7 @@
 	}
 ).play(s, [ \in1, ~filterb, \in2, ~delayb, \out, ~reverbb, \amp, 1.0 ], \addToTail);
 
+
 // Note that this isn't really a mixer.  To set the levels of delay and reverb,
 // set the amp parameters on those synths.  The amp here is the overall output gain.
 
@@ -141,25 +138,4 @@
 ).play(s, [ \passthrough, ~fxb, \filter, ~filterb, \delay, ~delayb, \reverb, ~reverbb, \out, 0, \amp, 0.4, \pt, 0.2 ], \addToTail);
 
 
-)
-
-
-(
-~grains = SynthDef(
-	\grains,
-	{
-		arg in=2, out=0, posb, pt=0.5, trate=120, size=12, pitch=1, amp=1.0, sweep=0.25, blur=0.2,buffer, gain=1.0;
-		var dur, blen, clk, chor, p, pos, pan, grains, passthrough;
-		passthrough = In.ar(in, 2) * pt;
-		p = In.kr(posb, 1);
-		// pos = 0.5 + LFSaw.kr(speed, 0, 0.5);
-		dur = size / trate;
-		blen = BufDur.kr(buffer);
-		clk = Impulse.kr(trate);
-		pan = WhiteNoise.kr(1 - sweep) + (2 * sweep * (p - 1));
-		pos = Wrap.kr(p + WhiteNoise.kr(blur), 0, 1);
-		grains = TGrains.ar(2, clk, buffer, pitch, pos * blen, dur, pan, amp * gain);
-		Out.ar(out, passthrough + grains);
-	}
-).play(s, [\in, ~grainsb, \out, ~filterb, \posb, ~grainposb, \buffer, ~frippbuffer, \amp, 0.5, \pt, 0.5, \blur, 0.2]);
 )

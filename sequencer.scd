@@ -30,12 +30,6 @@ t = TempoClock.new(~bpm / 120);
 // set up a control bus with a ramp that plays in sync with the sequencer
 // for the granulator effect (and anything else we need it for)
 
-SynthDef(
-	\seqramp, {
-		arg out, speed=1;
-		Out.kr(out, 0.5 + LFSaw.kr(speed, 0, 0.5));
-	}
-).add;
 
 ~seqramp = nil;
 
@@ -124,7 +118,6 @@ t.play({
 ~addseqnote = {
 	arg label, i, vel, time, abstime, duration;
 	var inst, note;
-	[ label, i, vel, time, abstime, duration ].postln;
 	inst = ~getinst.value(i);
 	note = (
 		\label: label,

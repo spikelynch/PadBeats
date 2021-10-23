@@ -127,4 +127,19 @@ SynthDef(\filtsaw, {
 	sigs = ((WhiteNoise.ar(noise) ! 2) + Saw.ar([freq, freq * (1 + detune)])) * env;
 	Out.ar(out, Pan2.ar(Mix.ar(DFM1.ar(sigs, filtenv)), pan));
 }).add;
+
+// not an instrument, it's used to provide a ramp from 0 to 1 which
+// runs in time with the sequencer - this is used to drive the
+// granulator effect playback but may come in handy for other things.
+// It's defined here so that it is on the server when sequencer.scd
+// instantiates it.
+
+SynthDef(
+	\seqramp, {
+		arg out, speed=1;
+		Out.kr(out, 0.5 + LFSaw.kr(speed, 0, 0.5));
+	}
+).add;
+
+
 )
