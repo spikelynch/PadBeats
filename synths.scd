@@ -44,20 +44,16 @@ SynthDef(\snare,
 
 
 SynthDef(\fm_basic, {
-	arg out=0, freq=440, saw=0, mRatio=1, cRatio=1, index=1, iScale=5,
+	arg out=0, freq=440, mRatio=1, cRatio=1, index=1, iScale=5,
 	amp=0.2, atk=0.01, decay=0.2, sustain=1.0,rel=3, gate=1, pan=0;
-	var car, mod, env, iEnv, refsaw;
-	env = EnvGen.kr(Env.adsr(atk, decay, sustain, release), gate, doneAction: Done.freeSelf);
-	iEnv = EnvGen.kr(Env.adsr(atk, decay, sustain, release), gate) * iScale + index;
-	//env = EnvGen.kr(Env.perc(atk, rel, amp), doneAction: Done.freeSelf);
-	//iEnv = EnvGen.kr(Env.new([index, index * iScale, index], [atk, rel]));
-
-	refsaw = Saw.ar(freq, saw) * env * amp;
+	var car, mod, env, iEnv;
+	env = EnvGen.kr(Env.adsr(atk, decay, sustain, rel), gate, doneAction: Done.freeSelf);
+	iEnv = EnvGen.kr(Env.adsr(atk, decay, sustain, rel), gate) * iScale + index;
 	mod = SinOsc.ar(freq * mRatio, mul:freq * mRatio * iEnv);
 	car = SinOsc.ar(freq * cRatio + mod) * env * amp;
-	car = Pan2.ar(car + refsaw, pan);
-	Out.ar(out, car);
+	Out.ar(out, Pan2.ar(car, pan));
 }).add;
+
 
 
 SynthDef(\klank, {
@@ -124,42 +120,3 @@ SynthDef(\tine, {
 }).add;
 )
 
-
-(
-
-
-SynthDef(\fm_basic, {
-	arg out=0, freq=440, saw=0, mRatio=1, cRatio=1, index=1, iScale=5,
-	amp=0.2, atk=0.01, decay=0.2, sustain=1.0,rel=3, gate=1, pan=0;
-	var car, mod, env, iEnv, refsaw;
-	env = EnvGen.kr(Env.adsr(atk, decay, sustain, rel), gate, doneAction: Done.freeSelf);
-	iEnv = EnvGen.kr(Env.adsr(atk, decay, sustain, rel), gate) * iScale + index;
-	//env = EnvGen.kr(Env.perc(atk, rel, amp), doneAction: Done.freeSelf);
-	//iEnv = EnvGen.kr(Env.new([index, index * iScale, index], [atk, rel]));
-
-	refsaw = Saw.ar(freq, saw) * env * amp;
-	mod = SinOsc.ar(freq * mRatio, mul:freq * mRatio * iEnv);
-	car = SinOsc.ar(freq * cRatio + mod) * env * amp;
-	car = Pan2.ar(car + refsaw, pan);
-	Out.ar(out, car);
-}).add;
-)
-
-
-// ~saw = Synth(\detunesaw, [\noise, 0.02]);
-//
-// ~saw.release;
-//
-// s.sendMsg('/n_free', 1010)
-// (5 / 2).asInteger
-//
-//
-// ~saw = Synth(\detunesaw, [ \detune, 0.001]);
-//
-// ~saw.release;
-// ~saw.free;
-// s.sendMsg('/n_free', 1307)
-//
-// (((-4..4) * 0.01) + 1) * 440
-//
-// (((-3..3) * 0.01) + 1)

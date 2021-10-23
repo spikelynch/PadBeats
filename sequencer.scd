@@ -102,6 +102,7 @@ t = TempoClock.new(~bpm / 120);
 
 ~addseqnote = {
 	arg label, i, vel, time, abstime, duration;
+	var fn, note;
 	fn = ~getinst.value(i);
 	note = (
 			\label: label,
@@ -113,7 +114,7 @@ t = TempoClock.new(~bpm / 120);
 			\fn: fn
 	);
 	if( label != '', { ~notes.add(note);} );
-}
+};
 
 
 ~metronome = {
