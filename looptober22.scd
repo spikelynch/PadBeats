@@ -64,8 +64,6 @@ s.boot;
 3.323242.asFraction()
 ~release = { |i| i > 11 }
 
-
-[1027, 1052, 1056].do{|n| s.sendMsg("/n_free", n)};
 (
 
 ~rquant = {
@@ -149,7 +147,7 @@ s.sendMsg('/n_free', 1070);
 
 ~recording='';
 ~metronome.value('metronome', 1, 4);
-~remove.value('metronome');
+~remove.value('melody');
 
 ~notes.removeAllSuchThat({|n| n[\synth][0] == \snare });
 
