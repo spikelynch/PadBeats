@@ -68,8 +68,8 @@ t.play({
 ~playseqkey = {
 	| i, note |
 	if( ~seqkeys[i].notNil && ~release.value(i), { ~releaseseqkey.value(i)});
-	//~seqkeys[i] = Synth.head(nil, note[\synth][0], [ \out, ~fxb, \amp, note[\velocity] / 127 ] ++ note[\synth][1] );
-	~seqkeys[i] = note[\fn].value(i, note);
+	~seqkeys[i] = Synth.head(nil, note[\synth], note[\args]);
+	//~seqkeys[i] = note[\fn].value(i, note);
 };
 
 
@@ -118,16 +118,15 @@ t.play({
 	inst = ~getinst.value(i);
 	note = (
 		\label: label,
-		\inst: inst[0],
 		\key: i,
 		\time: time,
 		\abstime: abstime,
 		\duration: duration,
-		\velocity: vel,
-		\fn: inst[2]
+		\synth: inst[0],
+		\args: inst[2].value(i, vel)
 	);
 	if( label != '', { ~notes.add(note);} );
-	[ inst, note ];
+	note;
 };
 
 
@@ -168,14 +167,4 @@ t.play({
 
 )
 
-~fripptrig.scope;
-
-(
-t.play({
-	Synth(\friptrig, [ \out, ~fripptrig ]);
-	"triggered".postln;
-}, quant: ~beatsperbar);
-)
-
-	Synth(\friptrig, [ \out, ~fripptrig ]);
 
