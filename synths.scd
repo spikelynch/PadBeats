@@ -24,11 +24,6 @@ SynthDef(\kick,
 		sig = SinOsc.ar(XLine.kr(hi, lo, decay));
 		noise = RLPF.ar(PinkNoise.ar(namp), XLine.kr(nhi, nlo, decay), 0.5);
 		Out.ar(out, Pan2.ar((sig + noise) * env, pan));
-		//
-		//
-		// SinOsc.ar(XLine.kr(6000, 60, 0.01), 1) *
-		// Line.kr(0.2 * amp, 0, 0.5, doneAction:Done.freeSelf),
-		// pan))
 	}
 ).add;
 
@@ -41,6 +36,18 @@ SynthDef(\snare,
 		click = LPF.ar(WhiteNoise.ar(0.5 * amp), cfreq) * Line.kr(1, 0, rel * 0.1);		    Out.ar(out, Pan2.ar((click + snare) * env, pan));
 	}
 ).add;
+
+SynthDef(
+	\notchsnare,
+	{
+		arg out=0, amp=0.4, pan=0, atk=0.01, rel=0.5, hi=10000, lo=2500, cfreq=1500, clevel=0.4, crel=0.01, notches=#[9000, 2000], bw=1;
+		var snare, click, env;
+		env = EnvGen.kr(Env.perc(atk, rel, amp, -8), doneAction: Done.freeSelf);
+		snare = RLPF.ar(Mix.ar(BBandStop.ar(PinkNoise.ar(amp), notches, bw)), XLine.kr(hi, lo, atk + rel));
+		click = LPF.ar(WhiteNoise.ar(clevel * amp), cfreq) * Line.kr(1, 0, crel);
+	Out.ar(out, Pan2.ar((click + snare) * env, pan));
+}).add;
+
 
 
 SynthDef(\fm_basic, {
@@ -107,6 +114,8 @@ SynthDef(\detunesaw, {
 	Out.ar(out, Pan2.ar(Mix.ar(sigs), pan));
 }).add;
 
+
+
 SynthDef(\tine, {
 	arg out=0, freq=440, a=1, partials=0.5, fade=0.1, amp=0.2, atk=0.01, rel=1, pan=0;
 	var env, sig, ifreq, nharms=10, harms, amps, rings, bank;
@@ -119,6 +128,25 @@ SynthDef(\tine, {
     Out.ar(out, Pan2.ar(sig * env * 4, pan));
 }).add;
 
+
+
+SynthDef(\ping, {
+	arg out=0, freq=440, harms=#[1, 2, 4], partials=0.5, fade=0.1, rate=10, amp=0.2, atk=0.01, rel=1, pan=0;
+	var env, sig, freqs, ifreq, nharms=harms.size, amps, rings, bank;
+	env = EnvGen.kr(Env.perc(atk, rel, amp), doneAction: Done.freeSelf);
+	freqs = freq * harms;
+	amps = Array.geom(nharms, 1 / nharms, fade);
+	rings = Array.geom(nharms, 1, partials);
+	bank = `[ freqs, amps, rings ];
+	sig = Klank.ar(bank, Impulse.ar(0));
+    Out.ar(out, Pan2.ar(sig * env, pan));
+}).add;
+
+
+
+
+
+
 SynthDef(\filtsaw, {
 	arg out=0, freq=440, detune=0.01, amp=0.2, atk=0.01, decay=0.02, noise=0.01, rel=1, sustain=0.8, gate=1, pan=0, filthi=12000, filtlo=400;
 	var env, filtenv, sigs, freqs;
@@ -128,18 +156,40 @@ SynthDef(\filtsaw, {
 	Out.ar(out, Pan2.ar(Mix.ar(DFM1.ar(sigs, filtenv)), pan));
 }).add;
 
+
+SynthDef(
+	\vox,
+	{
+		arg out=0, freq=440, formfreq=1760, bwfreq=880, amp=0.2, atk=0.01, decay=0.02, rel=1, sustain=0.8, gate=1, pan=0;
+	var env, sig;
+		env = EnvGen.kr(Env.adsr(atk, decay, sustain, rel, amp), gate, doneAction: Done.freeSelf);
+		sig = Formant.ar(freq, formfreq, bwfreq) * env;
+		Out.ar(out, Pan2.ar(sig, pan));
+}).add;
+
+
+
 // not an instrument, it's used to provide a ramp from 0 to 1 which
 // runs in time with the sequencer - this is used to drive the
 // granulator effect playback but may come in handy for other things.
 // It's defined here so that it is on the server when sequencer.scd
 // instantiates it.
 
+// phase from http://sccode.org/1-4Xg
+
 SynthDef(
 	\seqramp, {
-		arg out, speed=1;
-		Out.kr(out, 0.5 + LFSaw.kr(speed, 0, 0.5));
+		arg out, speed=1, tbeat=0;
+		Out.kr(out, 0.5 + LFSaw.kr(speed, (tbeat * 2 + 1) % 2, 0.5));
 	}
 ).add;
 
+
+SynthDef(
+	\friptrig, {
+		arg out=1;
+		Out.kr(out, Impulse.kr(0))
+	}
+).add;
 
 )

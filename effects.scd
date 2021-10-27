@@ -38,6 +38,8 @@
 ~reverbb = Bus.audio(s, 2);
 ~lfob = Bus.control(s, 1);
 
+~scarlettb = 2;
+
 ~lfo1 = SynthDef(
 	\lfo, {
 		arg out, freq=0.4, freqlo=0.01, freqhi=20, amp=0;
@@ -77,12 +79,23 @@
 ~grainposb = Bus.control(s, 1); // this is mapped to the buffer and should
                                 // be synced to the sequencer clock
 
+
+~scarlett = SynthDef(
+	\scarlettin,
+	{
+		arg in=2, passthrough, effects, amp=1.0, pan=0;
+		var stereo = Pan2.ar(In.ar(in, 1), pan);
+		Out.ar(passthrough, stereo * amp);
+		Out.ar(effects, stereo);
+	}
+).play(s, [\in, ~scarlettb, \passthrough, ~fxb, \amp, 1.0, \effects, ~grainsb, \pan, 0.1]);
+
+
 ~grains = SynthDef(
 	\grains,
 	{
-		arg in=2, out=0, posb, pt=0.5, trate=120, size=12, pitch=1, amp=1.0, sweep=0.25, blur=0.2,buffer, gain=1.0;
-		var dur, blen, clk, chor, p, pos, pan, grains, passthrough;
-		passthrough = In.ar(in, 2) * pt;
+		arg in=2, out=0, posb, trate=120, size=12, pitch=1, amp=1.0, sweep=0.25, blur=0.2,buffer, gain=1.0;
+		var dur, blen, clk, chor, p, pos, pan, grains;
 		p = In.kr(posb, 1);
 		// pos = 0.5 + LFSaw.kr(speed, 0, 0.5);
 		dur = size / trate;
@@ -91,9 +104,9 @@
 		pan = WhiteNoise.kr(1 - sweep) + (2 * sweep * (p - 1));
 		pos = Wrap.kr(p + WhiteNoise.kr(blur), 0, 1);
 		grains = TGrains.ar(2, clk, buffer, pitch, pos * blen, dur, pan, amp * gain);
-		Out.ar(out, passthrough + grains);
+		Out.ar(out, grains);
 	}
-).play(s, [\in, ~grainsb, \out, ~filterb, \posb, ~grainposb, \buffer, ~frippbuffer, \amp, 0.5, \pt, 0.5, \blur, 0.2]);
+).play(s, [\in, ~grainsb, \out, ~fxb, \posb, ~grainposb, \buffer, ~frippbuffer, \amp, 0.5, \blur, 0.2]);
 
 
 // ~scramble = SynthDef(
@@ -139,3 +152,4 @@
 
 
 )
+

@@ -3,11 +3,14 @@
 
 Server.killAll;
 
+Server.default.options.inDevice_("Scarlett 2i2 USB");
+
+
 s.boot;
 
 
 (
-~bpm = 140;
+~bpm = 117;
 ~beatsperbar = 4;
 
 ~buflength = ~beatsperbar * 60 / ~bpm;
@@ -21,9 +24,9 @@ s.boot;
 
 (
 ~delay.set(\amp, 0.2);
-~delay.set(\decaytime, 1.5);
+~delay.set(\decaytime, 2);
 
-~reverb.set(\amp, 0.9);
+~delay.set(\amp, 0);
 ~reverb.set(\room, 1.4);
 ~reverb.set(\damp, 0.2);
 ~reverb.set(\reverbmix, 0.4);
@@ -38,6 +41,7 @@ s.boot;
 
 )
 
+~grains.set(\amp, 0.8);
 
 ("./sequencer.scd").loadRelative();
 
@@ -54,12 +58,12 @@ s.boot;
 ~lfo1.map(\amp, ~knobs[5]);
 )
 
-~grains.set(\amp, 0.35);
+~grains.set(\amp, 0.8);
 
 ("./midikeys.scd").loadRelative();
 
 
-~scale = Scale.chromatic();
+~scale = Scale.chromatic(tuning: 'just');
 
 ~release = { |i| i > 11 }
 
@@ -88,27 +92,21 @@ s.boot;
 			\pan, 0,
 			\out, ~fxb ]); nil } ],
 	[ \snaret, 8,  { |i, note| Synth.head(nil, \snare, [ \hi, (i - 4) * 5000 + 5000, \cfreq, 10000, \pan, (i - 10) * 0.2, \out, ~fxb   ]); nil;  }  ],
-	[ \tinet,  12,  {
+	[ \hihatt,  12,  {
 		|i, note|
-		Synth.head(nil, \tine, [
-			\out, ~grainsb,
-			\freq, ~scale.degreeToFreq(i, 110, 0),
-			\a, 2.8,
-			\partials, 0.6,
-			\fade, 0.7,
-			\pan, (i - 6) * 0.4,
-			\amp, note[\velocity] / 200
-	]);
-		nil;
-	} ],
+		Synth.head(nil, \hihat, [
+			\filter, (i - 8) * 1000 + 2000 ,
+			\rel, 0.2,
+			\pan, 0.3,
+			\out, ~fxb ]); nil } ],
 [ \sawt, 41, {
 	| i, note |
 	var freq = ~scale.degreeToFreq(i, 110, 0);
 	Synth.head(nil, \detunesaw, [
-		\out, ~grainsb,
+		\out, ~fxb,
 		\freq, freq,
-		\atk, 0.01,
-		\rel, 0.4,
+		\atk, 0.9,
+		\rel, 0.9,
 		\pan, (i - 26.5) * 0.3,
 		\amp, note[\velocity] / 127
 	]);
@@ -131,9 +129,9 @@ s.sendMsg('/n_free', 1070);
 ~sinosc.free;
 
 
-~recording='mel';
+~recording='saw';
 ~metronome.value('metronome', 1, 4);
-~remove.value('mel');
+~remove.value('saw');
 
 ~notes.removeAllSuchThat({|n| n[\synth][0] == \snare });
 

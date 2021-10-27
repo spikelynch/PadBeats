@@ -158,7 +158,7 @@ s.boot;
 	[ \fm_basict, 41, {
 		| i, note |
 		var freq = ~scale.degreeToFreq(i, 110, 0);
-		Synth.head(nil, \detunesaw, [
+		Synth.head(nil, \fm_basic, [
 			\out, ~fxb,
 			\freq, freq,
 			\atk, 1,

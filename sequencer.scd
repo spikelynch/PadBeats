@@ -20,7 +20,7 @@
 
 (
 
-t = TempoClock.new(~bpm / 120);
+t = TempoClock.new(~bpm / 60);
 
 ~note0 = 36; // this is the midi value of the lowest key on the controller
 ~noten = 37; // this is the number of keys
@@ -34,11 +34,8 @@ t = TempoClock.new(~bpm / 120);
 ~seqramp = nil;
 
 t.play({
-	~seqramp = Synth(\seqramp, [ \out, ~grainposb, \speed, ~bpm / (60 * ~beatsperbar)]);
-	SynthDef(\friptrig, {
-		arg out=1;
-		Out.kr(out, Impulse.kr(0))
-	}).play(s, [ \out, ~friptrig ]);
+	~seqramp = Synth(\seqramp, [ \out, ~grainposb, \speed, ~bpm / (60 * ~beatsperbar), \tbeat, t.beats]);
+	Synth(\friptrig, [ \out, ~fripptrig ]);
 }, quant: ~beatsperbar);
 
 
@@ -56,7 +53,7 @@ t.play({
 
 
 
-~release = { | i | i > 12 };  // hack: return true if this synth needs releasing
+~release = { | i | i > 11 };  // hack: return true if this synth needs releasing
 
 
 ~getinst = {
@@ -170,4 +167,15 @@ t.play({
 
 
 )
+
+~fripptrig.scope;
+
+(
+t.play({
+	Synth(\friptrig, [ \out, ~fripptrig ]);
+	"triggered".postln;
+}, quant: ~beatsperbar);
+)
+
+	Synth(\friptrig, [ \out, ~fripptrig ]);
 

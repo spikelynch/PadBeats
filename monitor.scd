@@ -9,10 +9,11 @@
 		arg in, out=0, amp=0.5;
 		Out.ar(out, In.ar(in, 2) * amp);
 	}
-).play(s, [ \in, ~filterb ], \addToTail);
+).play(s, [ \in, ~grainsb ], \addToTail);
 
 )
 
+~monitor.free;
 
 
 // a test pulse
