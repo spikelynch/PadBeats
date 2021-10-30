@@ -13,8 +13,8 @@ s.boot;
 
 
 (
-~bpm = 160;
-~beatsperbar = 8;
+~bpm = 112;
+~beatsperbar = 4;
 
 ~buflength = ~beatsperbar * 60 / ~bpm;
 
@@ -22,6 +22,21 @@ s.boot;
 
 ~bpm / 60;
 
+// Do this to route the Scarlett or onboard mic input to the grains recorder
+(
+
+~scarlett = SynthDef(
+	\scarlettin,
+	{
+		arg in=2, passthrough, effects, amp=1.0, pan=0;
+		var stereo = Pan2.ar(In.ar(in, 1), pan);
+		Out.ar(passthrough, stereo * amp);
+		Out.ar(effects, stereo);
+	}
+).play(s, [\in, ~scarlettb, \passthrough, ~fxb, \amp, 1.0, \effects, ~grainsb, \pan, 0.1]);
+
+
+)
 
 
 
@@ -47,13 +62,13 @@ s.boot;
 ("./synths.scd").loadRelative();
 
 
-~reverb.set(\amp, 0.2);
+~reverb.set(\amp, 0.5);
 ~delay.set(\amp, 0.03);
 (
-~delay.set(\amp, 0.0);
+~delay.set(\amp, 0.1);
 ~delay.set(\decaytime, 2);
 ~reverb.set(\room, 1.4);
-~reverb.set(\damp, 0.8);
+~reverb.set(\damp, 0.2);
 ~reverb.set(\reverbmix, 0.4);
 
 ~mixer.set(\amp, 0.3);
@@ -78,21 +93,20 @@ s.boot;
 // arent just 0-1
 
 ~grains.set(\size, 10);
-~kmap
+
 (
-~bufrecorder.map(\mix, ~knobs[0]);
-~kmap[1] = [0, 0.2];
-~grains.map(\blur, ~knobs[1]);
-~kmap[2] = [-1, 1];
-~grains.map(\speed, ~knobs[2]);
+// ~bufrecorder.map(\mix, ~knobs[0]);
+// ~kmap[1] = [0, 0.2];
+// ~grains.map(\blur, ~knobs[1]);
+// ~kmap[2] = [-2, 2];
+// ~grains.map(\speed, ~knobs[2]);
 ~filter.map(\freq, ~knobs[3]);
 ~lfo1.map(\freq, ~knobs[4]);
 ~lfo1.map(\amp, ~knobs[5]);
 )
 
-~lfo1.set(\amp, 0.2);
 
-~grains.set(\amp,0.3);
+~grains.set(\size,10);
 
 ("./midikeys.scd").loadRelative();
 
@@ -118,7 +132,7 @@ s.boot;
 
 )
 
-~scarlett.free;
+
 
 
 
@@ -135,34 +149,34 @@ s.boot;
 
 	[ \notchsnare, 8, { |i, vel| [
 			\out, ~fxb,
-			\hi, (i - 4) * 1000 + 2000,
-			\lo, 20,
-			\cfreq, 12000,
+			\hi, (i - 4) * 1000 + 8000,
+			\lo, 250,
+			\cfreq, 15000,
 			\amp, vel / 127,
 			\clevel, vel / 256 + 0.5,
-		\notches, #[500, 2000, 10000],
+			\notches, #[1500, 2000, 7000],
 			\bw, 0.2,
-			\rel, 0.9,
+			\rel, 1.0,
 			\atk, 0.01,
 			\crel, 0.01
 	]} ],
 
 	[ \hihat,  12,  { |i, vel| [
-			\filter, (i - 8) * 2000 + 3000 ,
+			\filter, (i - 8) * 1000 + 2000 ,
 			\rel, 0.2,
 			\pan, 0.3,
 		    \amp, vel / 127,
 			\out, ~fxb ] } ],
-	[ \fm_basic, 41, { | i, vel | [
+	[ \klank, 41, { | i, vel | [
 		\out, ~fxb,
 		\freq, ~scale.degreeToFreq(i - 16, 220, 0),
 		\atk, 0.09,
 		\rel, 2,
-		\mRatio, ~rquant.value(~knobs[5].getSynchronous * 3, 3),
-		\cRatio, ~rquant.value(~knobs[6].getSynchronous * 3, 3),
-		\iScale, 1 + ~knobs[7].getSynchronous,
+		\partials, 0.75,
+		\fade, 0.9,
+		\a, 1.7,
 		\pan, (i - 26.5) * 0.02,
-		\amp, vel / 512
+		\amp, vel / 96
 	]} ]
 
 ]
@@ -189,10 +203,10 @@ s.boot;
 ~sinosc.free;
 
 
-~recording='';
-~metronome.value('metronome', 4, 1, 6);
+~recording='chime';
+~metronome.value('metronome', 1, 5);
 
-~remove.value('fm');
+~remove.value('bass');
 
 ~notes;
 
@@ -204,18 +218,5 @@ s.boot;
 
 ~frippbuffer.plot;
 
-~savepattern.value('looptober30', ~notes);
+~savepattern.value('looptober29b', ~notes);
 
-(
-~klank = Synth(\klank, [
-	\out, ~grainsb,
-	\freq, 880,
-	\atk, 0.09,
-	\rel, 1.5,
-	\partials, 0.25,
-	\fade, 0.9,
-	\a, 0.2,
-	\pan, 0,
-	\amp, 0.5
-])
-)

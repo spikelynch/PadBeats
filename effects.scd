@@ -80,6 +80,27 @@
                                 // be synced to the sequencer clock
 
 
+
+
+~grains = SynthDef(
+	\grains,
+	{
+		arg in=2, out=0, posb, trate=120, size=12, pitch=1, amp=1.0, sweep=0.25, blur=0.2,buffer, gain=1.0, speed=1;
+		var dur, blen, clk, chor, p, pos, pan, grains;
+		p = In.kr(posb, 1);
+		// pos = 0.5 + LFSaw.kr(speed, 0, 0.5);
+		dur = size / trate;
+		blen = BufDur.kr(buffer);
+		clk = Impulse.kr(trate);
+		pan = WhiteNoise.kr(1 - sweep) + (2 * sweep * (p - 1));
+		pos = Wrap.kr(p * speed + WhiteNoise.kr(blur), 0, 1);
+		grains = TGrains.ar(2, clk, buffer, pitch, pos * blen, dur, pan, amp * gain);
+		Out.ar(out, grains);
+	}
+).play(s, [\in, ~grainsb, \out, ~fxb, \posb, ~grainposb, \buffer, ~frippbuffer, \amp, 0.5, \blur, 0.2, \speed, 1]);
+
+
+
 ~scarlett = SynthDef(
 	\scarlettin,
 	{
@@ -91,22 +112,6 @@
 ).play(s, [\in, ~scarlettb, \passthrough, ~fxb, \amp, 1.0, \effects, ~grainsb, \pan, 0.1]);
 
 
-~grains = SynthDef(
-	\grains,
-	{
-		arg in=2, out=0, posb, trate=120, size=12, pitch=1, amp=1.0, sweep=0.25, blur=0.2,buffer, gain=1.0;
-		var dur, blen, clk, chor, p, pos, pan, grains;
-		p = In.kr(posb, 1);
-		// pos = 0.5 + LFSaw.kr(speed, 0, 0.5);
-		dur = size / trate;
-		blen = BufDur.kr(buffer);
-		clk = Impulse.kr(trate);
-		pan = WhiteNoise.kr(1 - sweep) + (2 * sweep * (p - 1));
-		pos = Wrap.kr(p + WhiteNoise.kr(blur), 0, 1);
-		grains = TGrains.ar(2, clk, buffer, pitch, pos * blen, dur, pan, amp * gain);
-		Out.ar(out, grains);
-	}
-).play(s, [\in, ~grainsb, \out, ~fxb, \posb, ~grainposb, \buffer, ~frippbuffer, \amp, 0.5, \blur, 0.2]);
 
 
 // ~scramble = SynthDef(
@@ -152,4 +157,3 @@
 
 
 )
-

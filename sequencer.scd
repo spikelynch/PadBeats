@@ -22,6 +22,11 @@
 
 t = TempoClock.new(~bpm / 60);
 
+t.schedAbs(t.nextBar, {
+	t.beatsPerBar_(~beatsperbar);
+	[ "set beatsperbar to ", ~beatsperbar ].postln;
+});
+
 ~note0 = 36; // this is the midi value of the lowest key on the controller
 ~noten = 37; // this is the number of keys
 
@@ -131,9 +136,13 @@ t.play({
 
 
 ~metronome = {
-	| label, i, j |
-	~addseqnote.value(label, i, 64, 0, 0, 0.125);
-	(1..~beatsperbar).do({ |n| ~addseqnote.value(label, j, 64, n - 1, 0, 0.125); });
+	| label, n, i, j |
+	(0..n-1).do({
+		|m|
+		~addseqnote.value(label, i, 64, m * 2, 0, 0.125);
+		~addseqnote.value(label, j, 64, m * 2 + 1, 0, 0.125);
+	//(1..~beatsperbar).do({ |n| ~addseqnote.value(label, j, 64, n - 1, 0, 0.125); });
+	});
 };
 
 ~remove = {
@@ -166,5 +175,4 @@ t.play({
 
 
 )
-
 
