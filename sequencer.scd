@@ -17,10 +17,9 @@
 
 
 
-
 (
 
-t = TempoClock.new(~bpm / 60);
+t = TempoClock.new(~bpm / 60, queueSize: 1024);
 
 t.schedAbs(t.nextBar, {
 	t.beatsPerBar_(~beatsperbar);

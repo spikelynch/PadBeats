@@ -99,10 +99,21 @@ SynthDef(\sine, {
 }).add;
 
 SynthDef(\square, {
-	arg out=0, freq=440, amp=0.2, atk=0.01, decay=0.02, width = 0.5, rel=1, sustain=0.8, gate=1, pan=0;
+	arg out=0, freq=440, amp=0.2, atk=0.01, decay=0.02, width = 0.5, detune=0.01, rel=1, sustain=0.8, gate=1, pan=0;
 	var env, sigs;
 	env = EnvGen.kr(Env.adsr(atk, decay, sustain, rel, amp), gate, doneAction: Done.freeSelf);
-	Out.ar(out, Pan2.ar(Pulse.ar(freq, width) * amp * env, pan));
+	sigs = Pulse.ar([freq, freq * (1 + detune)], [ width, width ]);
+	Out.ar(out, Pan2.ar(Mix.ar(sigs) * env, pan));
+}).add;
+
+
+
+SynthDef(\detunesquare, {
+	arg out=0, freq=440, amp=0.2, atk=0.01, decay=0.02, width = 0.5, detune=0.01, rel=1, sustain=0.8, gate=1, pan=0;
+	var env, sigs;
+	env = EnvGen.kr(Env.adsr(atk, decay, sustain, rel, amp), gate, doneAction: Done.freeSelf);
+	sigs = Pulse.ar([freq, freq * (1 + detune)], [ width, width ]);
+	Out.ar(out, Pan2.ar(Mix.ar(sigs) * env, pan));
 }).add;
 
 
@@ -168,6 +179,20 @@ SynthDef(
 }).add;
 
 
+SynthDef(
+	\sweep,
+	{
+		arg out=0, freq=220, rate=2, filtrate=2, filtfreq=4000,filtamp=2000, amp=0.2, atk=0.01, decay=0.02, rel=0.5, sustain=1.0, gate=1, pan=0;
+		var env, sig, filt;
+		env = EnvGen.kr(Env.adsr(atk, decay, sustain, rel, amp), gate, doneAction: Done.freeSelf);
+		sig = Saw.ar(SinOsc.kr(rate).linlin(-1, 1, freq, freq * 2), amp) * env;
+		filt = RLPF.ar(sig, SinOsc.kr(filtrate) * filtamp + filtfreq, 1.0);
+		Out.ar(out, Pan2.ar(filt, pan));
+	}
+).add;
+
+
+
 
 // not an instrument, it's used to provide a ramp from 0 to 1 which
 // runs in time with the sequencer - this is used to drive the
@@ -193,3 +218,4 @@ SynthDef(
 ).add;
 
 )
+

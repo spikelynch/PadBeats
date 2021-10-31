@@ -87,13 +87,13 @@
 	{
 		arg in=2, out=0, posb, trate=120, size=12, pitch=1, amp=1.0, sweep=0.25, blur=0.2,buffer, gain=1.0, speed=1;
 		var dur, blen, clk, chor, p, pos, pan, grains;
-		p = In.kr(posb, 1);
+		p = (((In.kr(posb, 1) - 0.5) * 2).cos + 1) * 0.5;
 		// pos = 0.5 + LFSaw.kr(speed, 0, 0.5);
 		dur = size / trate;
 		blen = BufDur.kr(buffer);
 		clk = Impulse.kr(trate);
 		pan = WhiteNoise.kr(1 - sweep) + (2 * sweep * (p - 1));
-		pos = Wrap.kr(p * speed + WhiteNoise.kr(blur), 0, 1);
+		pos = Wrap.kr(p + WhiteNoise.kr(blur), 0, 1);
 		grains = TGrains.ar(2, clk, buffer, pitch, pos * blen, dur, pan, amp * gain);
 		Out.ar(out, grains);
 	}
@@ -101,15 +101,15 @@
 
 
 
-~scarlett = SynthDef(
-	\scarlettin,
-	{
-		arg in=2, passthrough, effects, amp=1.0, pan=0;
-		var stereo = Pan2.ar(In.ar(in, 1), pan);
-		Out.ar(passthrough, stereo * amp);
-		Out.ar(effects, stereo);
-	}
-).play(s, [\in, ~scarlettb, \passthrough, ~fxb, \amp, 1.0, \effects, ~grainsb, \pan, 0.1]);
+// ~scarlett = SynthDef(
+// 	\scarlettin,
+// 	{
+// 		arg in=2, passthrough, effects, amp=1.0, pan=0;
+// 		var stereo = Pan2.ar(In.ar(in, 1), pan);
+// 		Out.ar(passthrough, stereo * amp);
+// 		Out.ar(effects, stereo);
+// 	}
+// ).play(s, [\in, ~scarlettb, \passthrough, ~fxb, \amp, 1.0, \effects, ~grainsb, \pan, 0.1]);
 
 
 
